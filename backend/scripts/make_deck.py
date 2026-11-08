@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Build the 10-slide business case on the Airtel SYNC submission template.
+"""Build the 7-slide submission on the Airtel SYNC submission template.
 
 Usage: python scripts/make_deck.py  ->  docs/Udyam_Digital_Submission.pptx
 Every figure comes from docs/charts/numbers.json (computed by make_charts.py) or from the rules engine; nothing is typed in.
@@ -23,7 +23,7 @@ from app.engine.catalogue import catalogue  # noqa: E402
 from app.engine.models import Need, Profile  # noqa: E402
 
 TEMPLATE = ROOT.parent / "6ad9d4887d445_airtel_sync" / "Submission Template_Sync.pptx"
-OUT = ROOT / "docs" / "Udyam_Digital_Submission.pptx"
+OUT = ROOT / "docs" / "UdyamDigital_IIITDelhi.pptx"      # TeamName_CampusName, as the submission rules ask
 NUMBERS = json.loads((ROOT / "docs" / "charts" / "numbers.json").read_text(encoding="utf-8"))
 WORK = ROOT / "docs" / ".deck_assets"
 
@@ -278,55 +278,6 @@ def slide_leak(prs, bg):
     return s
 
 
-def slide_segments(prs, bg):
-    pb = NUMBERS["payback_by_segment"]
-    s = new_slide(prs, bg)
-    title(s, "Where to go first: payback decides", "Blended CAC per activation (all leads' acquisition cost ÷ activations) against the monthly bundle value, by segment.")
-    rows = [["Segment", "Leads", "Activation", "₹/month", "6-mo churn", "CAC / activation", "Payback", "Our move"],
-            ["Small multi-site", "755 (15%)", "11.0%", f"₹{pb['Small multi-site businesses']['monthly_value']:,}", "11%", f"₹{pb['Small multi-site businesses']['blended_cac']:,}", "0.5 mo", "Wave 1: digital discovery, field close"],
-            ["Small manufacturers", "289 (6%)", "12.8%", f"₹{pb['Small manufacturers']['monthly_value']:,}", "8%", f"₹{pb['Small manufacturers']['blended_cac']:,}", "0.8 mo", "Wave 2: field-assisted (ILL, SD-WAN)"],
-            ["Professional offices", "1,247 (25%)", "11.1%", f"₹{pb['Professional offices']['monthly_value']:,}", "14%", f"₹{pb['Professional offices']['blended_cac']:,}", "1.6 mo", "Wave 1: digital, optional assist"],
-            ["Micro retail & services", "2,709 (54%)", "4.1%", f"₹{pb['Micro retail & services']['monthly_value']:,}", "23%", f"₹{pb['Micro retail & services']['blended_cac']:,} (field ₹53,026)", "8.0 mo", "Digital only; no field visits"]]
-    table(s, 0.5, 1.75, 9.0, 1.95, rows, [1.55, 0.9, 0.8, 0.8, 0.8, 1.45, 0.7, 2.0], size=8.5, highlight_rows=(4,))
-    # payback chart
-    text(s, 0.5, 3.85, 4.4, 0.3, "Months of revenue to repay the acquisition cost", size=10, bold=True)
-    cats = ["Small multi-site", "Small manufacturers", "Professional offices", "Micro retail & services"]
-    keys = ["Small multi-site businesses", "Small manufacturers", "Professional offices", "Micro retail & services"]
-    bars(s, 0.5, 4.1, 4.5, 0.95, cats, [pb[k]["payback_months"] for k in keys], [DARK, DARK, DARK, RED], fmt=lambda v: f"{v:.1f} mo", label_w=1.6, font_size=8, value_w=0.55)
-    card(s, 5.25, 3.9, 4.3, 1.15, fill=TINT, line_color=TINT)
-    text(s, 5.4, 3.97, 4.0, 1.05, [
-        [("Verdict. ", {"bold": True, "color": RED}), ("Professional offices and small multi-site first: they pay back in weeks. Micro retail goes digital-only, "
-          "where a field visit costs ₹53,026 to win ₹2,619 a month. Manufacturers come in wave 2 with field assistance for leased lines and SD-WAN.", {})],
-    ], size=9.5, color=DARK, line=1.2)
-    source(s)
-    return s
-
-
-def slide_bundles(prs, bg):
-    s = new_slide(prs, bg)
-    title(s, "One bundle per segment, one monthly number", "Composed by the rules engine from the catalogue's eligibility rules and minimum prices; the owner can switch items on and off and the price re-validates instantly.")
-    specs = [
-        ("Dukaan Start", "Micro retail · GST-free path", Profile(business_type="Kirana store", employee_count=2, num_sites=1, city="Lucknow", has_gstin=False), "Live in 2 days, no setup fee, no GST needed. For the 1,466 no-GST leads (2.0% activation today)."),
-        ("Clinic / Office Pro", "Professional offices", Profile(business_type="Dental clinic", employee_count=8, num_sites=1, city="Nagpur", has_gstin=True, needs=[Need.EMAIL, Need.SECURITY, Need.UPTIME]), "Email for every user, backup, endpoint security and a failover line, because a clinic cannot be offline."),
-        ("Multi-Store", "Small multi-site · 3 outlets", Profile(business_type="Restaurant chain", employee_count=25, num_sites=3, city="Bengaluru", has_gstin=True, needs=[Need.BRANCHES, Need.CCTV, Need.POS_DROPS]), "Every outlet on one network with cameras and billing that never stops; SD-WAN and toll-free need GST."),
-        ("Factory Connect", "Small manufacturers", Profile(business_type="Auto-parts unit", employee_count=12, num_sites=1, city="Pune", has_gstin=True, needs=[Need.MACHINES, Need.SECURITY]), "A leased line with an SLA, machine monitoring and a managed firewall; 21-day install stated up front."),
-    ]
-    x = 0.5
-    for name, seg, prof, why in specs:
-        b = bundle(prof)
-        card(s, x, 1.75, 2.15, 3.3)
-        rect(s, x, 1.75, 2.15, 0.08, fill=RED)
-        text(s, x + 0.1, 1.9, 1.95, 0.3, name, size=12, bold=True)
-        text(s, x + 0.1, 2.17, 1.95, 0.25, seg, size=8, color=MUTED)
-        text(s, x + 0.1, 2.42, 1.95, 0.4, [[("from ", {"size": 9, "color": INK2}), (f"₹{b['from']:,}", {"size": 18, "bold": True, "color": RED}), (" /month", {"size": 9, "color": INK2})]])
-        text(s, x + 0.1, 2.85, 1.95, 0.25, f"Setup ₹{b['setup']:,} · {b['contract']}-month · live in {b['install']} days", size=7.5, color=INK2)
-        text(s, x + 0.1, 3.1, 1.95, 1.15, [[("• " + it, {})] for it in b["items"][:7]], size=7.5, color=DARK, line=1.05)
-        text(s, x + 0.1, 4.3, 1.95, 0.7, why, size=7.5, color=INK2, italic=True, line=1.1)
-        x += 2.28
-    source(s, "Prices are catalogue minimums composed by backend/app/engine (python scripts/run_scenarios.py reproduces them); ranges and setup fees shown to the owner on the quote screen.")
-    return s
-
-
 def architecture_crop() -> Path:
     """The slide has its own title, so drop the title band of the diagram and keep the boxes at full resolution."""
     from PIL import Image
@@ -338,7 +289,7 @@ def architecture_crop() -> Path:
 
 def slide_architecture(prs, bg):
     s = new_slide(prs, bg)
-    title(s, "How it is built: rules decide, the LLM narrates")
+    title(s, "Our approach: rules decide, the LLM narrates")
     # left: the six steps the owner sees
     steps = [("Enter", "link, QR or WhatsApp; mobile + one-time code"), ("Advisor", "4 to 6 questions in Hindi or English"), ("Quote", "one monthly number, re-checked on every toggle"),
              ("Consent", "itemised DPDP notice before any document"), ("Smart KYC", "four photos, 12 checks in seconds"), ("Tracker", "dated stages, zero status calls")]
@@ -393,93 +344,119 @@ def slide_kyc(prs, bg):
     return s
 
 
-def slide_field(prs, bg):
-    n = NUMBERS["activation_by_source"]
+def slide_competitive(prs, bg):
     s = new_slide(prs, bg)
-    title(s, "Digital adds; the field force multiplies", "Take the field team out of the ₹2,500 kirana sale and put it where payback is under a month. Attribution keeps partners on side.")
-    order = sorted(n.items(), key=lambda kv: -kv[1]["rate_pct"])
-    text(s, 0.5, 1.72, 4.6, 0.3, "Activation rate by lead source", size=10, bold=True)
-    bars(s, 0.5, 2.05, 4.6, 2.45, [k for k, _ in order], [v["rate_pct"] for _, v in order],
-         [RED if k == "Referral" else DARK for k, _ in order], fmt=lambda v: f"{v:.1f}%", label_w=1.45, font_size=8.5, value_w=0.55)
-    text(s, 0.5, 4.6, 4.6, 0.5, f"Referral converts at {n['Referral']['rate_pct']}% but churns at 24.6%: pay the referral bonus at month 3, not at activation.", size=8.5, color=INK2, italic=True)
-    moves = [("Micro retail goes digital-only", f"Field sales spent ₹53,026 per activation here. Removing those 27 visits a quarter saves about ₹14 lakh per quarter with no loss of volume."),
-             ("Field team redeployed to multi-site and manufacturers", "Payback 0.5 and 0.8 months. The advisor qualifies and quotes; a human closes the ₹20,000-plus accounts and handles ILL and SD-WAN installs."),
-             ("Partners keep their code", "Every journey carries a partner code for attribution and commission; partners see the scored queue for their area."),
-             ("Nothing dead-ends", "Leads the journey cannot close land in a back-office queue ranked by a propensity model (holdout AUC 0.68) plus how recoverable the drop reason is, each with a suggested next action.")]
-    y = 1.75
-    for head, body in moves:
-        card(s, 5.3, y, 4.25, 0.78, fill=WHITE)
-        rect(s, 5.3, y, 0.07, 0.78, fill=RED)
-        text(s, 5.47, y + 0.05, 4.0, 0.25, head, size=9.5, bold=True)
-        text(s, 5.47, y + 0.3, 4.0, 0.5, body, size=7.5, color=INK2, line=1.1)
-        y += 0.84
-    source(s)
+    title(s, "Competitive analysis: where Udyam Digital differs",
+          "Public sources only, reviewed November 2026. \"Not public\" means we found no published detail, not that the feature is absent.")
+    NP = "Not public"
+    rows = [["", "Airtel today", "Jio Business", "Vi Business", "Tata Tele (TTBS)", "Udyam Digital"],
+            ["How an owner starts", "Field visit or call-back. 48.5% of drops are the sales process", "Plan page, then business details and KYC documents online (third-party summary)",
+             "Online form, then a rep calls back within 48 h (corporate postpaid)", "Sales-led. No public self-serve flow found", "Self-serve on the owner's phone, in Hindi or English"],
+            ["Price", "Quote after a visit. The quote alone takes 4 days", "Tiered plans, reported from ₹501 at the 2021 launch", "Postpaid from ₹299 a line",
+             "Pay-as-you-grow. Prices not public", "One monthly number in the chat, re-checked on every toggle"],
+            ["What is bundled", "25 products, sold one by one", "Connectivity plus apps: Jio Online, Teams and Meet licences (2021)", "Mobile plans, data pooling for small firms",
+             "Connectivity, cloud calling and security suites", "A rules-checked bundle per segment with dependencies closed"],
+            ["KYC", "Paper at the visit. 22 activations had a non-active GSTIN", "GSTIN or PAN documents (third-party summary)", "Assisted KYC at the doorstep. A DoT notice reported on business lines without end-user KYC",
+             NP, "12 checks in seconds against GST and Udyam, after consent"],
+            ["Language and tracking", "Status by phone: 3.0 calls per customer", NP, NP, NP, "Hindi and English. Dated tracker, zero status calls"]]
+    t = table(s, 0.5, 1.75, 9.0, 3.05, rows, [1.05, 1.6, 1.65, 1.65, 1.45, 1.6], size=7, first_col_bold=True)
+    for i in range(len(rows)):
+        c = t.cell(i, 5)
+        c.fill.solid()
+        c.fill.fore_color.rgb = RED if i == 0 else TINT
+        if i:
+            for p_ in c.text_frame.paragraphs:
+                for r_ in p_.runs:
+                    r_.font.bold = True
+    for i in range(1, len(rows)):
+        for j in (2, 3, 4):
+            if rows[i][j] == NP:
+                for p_ in t.cell(i, j).text_frame.paragraphs:
+                    for r_ in p_.runs:
+                        r_.font.color.rgb = MUTED
+                        r_.font.italic = True
+    text(s, 0.5, 4.85, 9.0, 0.3, "None of the public material we reviewed shows one phone journey from quote to registry-checked KYC to a validated bundle.",
+         size=8.5, bold=True, color=RED, line=1.05)
+    source(s, "Sources: businesstoday.in (Jio, Mar 2021), myvi.in corporate postpaid pages, bharatnet.in (DoT notice), tatatelebusiness.com and tele.net.in. Airtel and Udyam Digital columns: smb_leads.csv and the prototype.")
     return s
 
 
-def slide_rollout(prs, bg):
+BUNDLE_PROFILES = [
+    ("Small multi-site", "Multi-Store", Profile(business_type="Restaurant chain", employee_count=25, num_sites=3, city="Bengaluru", has_gstin=True, needs=[Need.BRANCHES, Need.CCTV, Need.POS_DROPS])),
+    ("Small manufacturers", "Factory Connect", Profile(business_type="Auto-parts unit", employee_count=12, num_sites=1, city="Pune", has_gstin=True, needs=[Need.MACHINES, Need.SECURITY])),
+    ("Professional offices", "Clinic / Office Pro", Profile(business_type="Dental clinic", employee_count=8, num_sites=1, city="Nagpur", has_gstin=True, needs=[Need.EMAIL, Need.SECURITY, Need.UPTIME])),
+    ("Micro retail & services", "Dukaan Start", Profile(business_type="Kirana store", employee_count=2, num_sites=1, city="Lucknow", has_gstin=False)),
+]
+
+
+def slide_impact(prs, bg):
+    pb = NUMBERS["payback_by_segment"]
+    n_act = NUMBERS["activated"]
+    keys = ["Small multi-site businesses", "Small manufacturers", "Professional offices", "Micro retail & services"]
+    blended_cac = round(sum(pb[k]["blended_cac"] * pb[k]["activations"] for k in keys) / n_act)
+    avg_value = sum(pb[k]["monthly_value"] * pb[k]["activations"] for k in keys) / n_act
+    spend_lakh = blended_cac * n_act / 1e5
+    target_acts = round(NUMBERS["leads"] * 0.12)
+    extra = target_acts - n_act
+    extra_mrr_lakh = extra * avg_value / 1e5
     s = new_slide(prs, bg)
-    title(s, "Rollout in three phases", "Start where the data says the money is, with the adapters that make mocks real.")
-    phases = [("Phase 0 · Q3 2026", "Prove it", ["Delhi + Mumbai", "Hindi and English, Hinglish auto-detect", "Micro retail (GST-free) + professional offices", "Web and WhatsApp entry, partner-code pilot with 20 partners", "Mock registries swapped for GSTN/GSP and Udyam APIs"],
-               "Gate: 12% blended activation, quote in under 5 minutes, zero activations with a non-active GSTIN"),
-              ("Phase 1 · Q4 2026", "Widen", ["Tier-2 cities (Jaipur, Lucknow, Indore, Nagpur, Surat...)", "Small multi-site journeys with per-site quotes", "DigiLocker pull of GST/Udyam certificates, eSign for the order", "Field team re-routed by the propensity queue"],
-               "Gate: CAC per activation ≤ ₹7,500; KYC first-pass ≥ 70%"),
-              ("Phase 2 · Q1 2027", "Deepen", ["Manufacturers: leased line and SD-WAN journeys with field assist", "Real-time fibre serviceability at quote time", "30-day check-in and referral bonus at month 3", "Regional languages beyond Hindi where volume justifies it"],
-               "Gate: 6-month churn ≤ 10%; status calls per customer < 0.5")]
+    title(s, "Impact: 12% activation at half the cost per customer",
+          "Two-quarter targets on the same lead volume and acquisition spend, measured weekly from tables the prototype already writes.")
+    kpis = [("Lead to activation", "7.4% → 12%"), ("Cost per activation", f"₹{blended_cac:,} → ≤₹7,500"), ("Lead to live", "17 days → ≤5 days"),
+            ("Status calls per customer", "3.0 → under 0.5"), ("6-month churn", "15.2% → ≤10%"), ("Non-active GSTIN activations", "22 → 0")]
+    for i, (lab, val) in enumerate(kpis):
+        x, y = 0.5 + (i % 2) * 2.3, 1.75 + (i // 2) * 1.08
+        card(s, x, y, 2.2, 0.98)
+        text(s, x + 0.1, y + 0.08, 2.0, 0.25, lab, size=8.5, color=INK2)
+        text(s, x + 0.1, y + 0.36, 2.0, 0.5, val, size=15, bold=True, color=RED, anchor=MSO_ANCHOR.MIDDLE)
+    text(s, 5.2, 1.72, 4.3, 0.3, "Who we win first, and what they buy", size=10, bold=True)
+    rows = [["Segment", "Bundle, from ₹/month", "Payback"]]
+    for (seg, name, prof), k in zip(BUNDLE_PROFILES, keys):
+        b = bundle(prof)
+        pay = f"{pb[k]['payback_months']:.1f} mo" if seg != "Micro retail & services" else "8.0 → 1.2 mo"
+        rows.append([seg, f"{name} ₹{b['from']:,}", pay])
+    table(s, 5.2, 2.0, 4.35, 1.5, rows, [1.45, 1.85, 1.05], size=8, highlight_rows=(4,))
+    text(s, 5.2, 3.52, 4.35, 0.3, "Micro retail goes digital-only: at a ₹3,000 cost per activation its payback falls from 8.0 to about 1.2 months.", size=7.5, color=INK2, italic=True, line=1.05)
+    card(s, 5.2, 3.95, 4.35, 1.1, fill=TINT, line_color=TINT)
+    text(s, 5.32, 4.0, 4.1, 1.02, [[("What it is worth. ", {"bold": True, "color": RED}),
+         (f"The same ₹{spend_lakh:.1f} lakh at 12% activation brings {target_acts} customers a quarter instead of {n_act}, {extra} more. "
+          f"At today's segment mix and ₹{avg_value:,.0f} average monthly value, that is about ₹{extra_mrr_lakh:.1f} lakh more monthly recurring revenue, before churn.", {})]],
+         size=8.5, color=DARK, line=1.15)
+    source(s, "Projection from the Apr to Jun 2026 leads file; it assumes the extra customers match today's segment mix. Targets are ours, not Airtel commitments.")
+    return s
+
+
+def slide_rollout_risks(prs, bg):
+    s = new_slide(prs, bg)
+    title(s, "Rollout, risks and proof", "Start where the data says the money is, and say plainly what could go wrong.")
+    phases = [("Q3 2026", "Prove it", "Delhi and Mumbai, Hindi and English. Micro retail and professional offices. Live GSTN and Udyam APIs. Partner-code pilot.", "Gate: 12% activation, quote in under 5 minutes"),
+              ("Q4 2026", "Widen", "Tier-2 cities. Multi-site journeys. DigiLocker and eSign. Field team routed by the propensity queue.", "Gate: cost per activation ≤ ₹7,500, KYC first pass ≥ 70%"),
+              ("Q1 2027", "Deepen", "Manufacturers with field assist for leased line and SD-WAN. Serviceability at quote time. Regional languages.", "Gate: 6-month churn ≤ 10%, status calls under 0.5")]
+    y = 1.72
+    for i, (when, head, body, gate) in enumerate(phases):
+        card(s, 0.5, y, 4.45, 0.86)
+        rect(s, 0.5, y, 0.95, 0.86, fill=RED if i == 0 else DARK)
+        text(s, 0.52, y + 0.12, 0.91, 0.25, when, size=8, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        text(s, 0.52, y + 0.38, 0.91, 0.3, head, size=11, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        text(s, 1.52, y + 0.04, 3.38, 0.55, body, size=7.6, color=DARK, line=1.08)
+        text(s, 1.52, y + 0.6, 3.38, 0.25, gate, size=7.3, bold=True, color=RED)
+        y += 0.93
+    rows = [["Risk", "What we built against it"],
+            ["The model suggests something the owner cannot have", "The rules engine decides every item. 30 scenarios and 16 live chats, zero violations"],
+            ["KYC wrongly rejects a genuine owner", "Photo problems become REVIEW with a plain fix. Every FAIL has a reason and a human hand-off"],
+            ["Telecom end-user KYC still applies to SIMs", "Registry checks are added to the DoT-required step, not a replacement. A reported DoT notice to Vi shows the exposure"],
+            ["Model or API down mid-journey", "Provider chain, cached replies, offline engine. The journey completes with no model"],
+            ["Channel conflict with partners and field sales", "Partner code on every journey. High-value leads routed to humans"],
+            ["DPDP exposure", "Consent gate, masking, retention purge, erasure, audit log"]]
+    table(s, 5.1, 1.72, 4.45, 2.72, rows, [1.5, 2.95], size=7, zebra=True)
+    proof = [("2,050", "automated tests green in CI"), ("30 / 30", "advisor scenarios pass"), ("12 / 12", "KYC verdicts match the key"), ("16 / 16", "live chats, zero violations")]
     x = 0.5
-    for i, (when, head, items, gate) in enumerate(phases):
-        card(s, x, 1.78, 2.95, 3.25)
-        rect(s, x, 1.78, 2.95, 0.5, fill=RED if i == 0 else DARK, shape=MSO_SHAPE.RECTANGLE)
-        text(s, x + 0.12, 1.83, 2.7, 0.22, when, size=8.5, bold=True, color=RGBColor(0xFF, 0xD6, 0xE1) if i == 0 else RGBColor(0xD1, 0xD5, 0xDB))
-        text(s, x + 0.12, 2.0, 2.7, 0.28, head, size=12, bold=True, color=WHITE)
-        text(s, x + 0.12, 2.4, 2.7, 1.75, [[("• " + it, {})] for it in items], size=9, color=DARK, line=1.25)
-        rect(s, x + 0.12, 4.25, 2.7, 0.01, fill=LINE)
-        text(s, x + 0.12, 4.32, 2.7, 0.7, gate, size=8.5, color=RED, bold=True, line=1.15)
-        x += 3.03
-    text(s, 0.5, 5.08, 9.0, 0.3, "Dependencies: GSTN/GSP and Udyam API access, DigiLocker and eSign onboarding, a DLT-registered SMS template for OTPs, partner commission rules.", size=7.5, color=MUTED)
-    return s
-
-
-def slide_metrics(prs, bg):
-    s = new_slide(prs, bg)
-    title(s, "What we will measure", "Q2 2026 baseline from the leads file; two-quarter targets, and the design feature that moves each one.")
-    rows = [["Metric", "Today", "Target (2 quarters)", "What moves it"],
-            ["Lead → activation", "7.4%", "12% blended; 15% for offices and multi-site", "Instant quote, GST-free path, no visit-dependent steps"],
-            ["Lead → activation time", "17 days (quote alone 4)", "≤ 5 days, install-bound; quote in < 5 minutes", "Advisor + engine + instant KYC"],
-            ["Status calls per customer", "3.0", "< 0.5", "Tracker with dated stages and proactive notifications"],
-            ["Blended CAC per activation", "₹15,053", "≤ ₹7,500 (micro ≤ ₹3,000)", "Digital-only micro, referral, redeployed field force"],
-            ["6-month churn", "15.2%", "≤ 10%", "Fewer calls, right-sized bundles, 30-day check-in, bonus at month 3"],
-            ["Activations with non-active GSTIN", "22", "0", "Live registry check inside KYC, before the order"],
-            ["KYC first-pass rate", "n/a", "≥ 70%; REVIEW resolved within 24 h", "Human-language fixes, re-upload path, Udyam-only path"]]
-    table(s, 0.5, 1.75, 9.0, 3.1, rows, [2.1, 1.5, 2.4, 3.0], size=8.5)
-    text(s, 0.5, 4.95, 9.0, 0.25, "Measured weekly from the same tables the prototype already writes: sessions, consents, kyc_applications, orders, audit_log.", size=8, color=INK2, italic=True)
-    source(s)
-    return s
-
-
-def slide_risks(prs, bg):
-    s = new_slide(prs, bg)
-    title(s, "Risks we designed for, and what is already built", "Each mitigation is a code path in the prototype, not a plan.")
-    rows = [["Risk", "Mitigation in the prototype"],
-            ["The model recommends something the owner is not eligible for", "The rules engine decides every item; the model only narrates; the UI renders engine JSON. 30 scenario fixtures + 16 live transcripts, zero violations"],
-            ["KYC wrongly rejects a genuine owner", "Photo problems are REVIEW with a plain-language fix; FAIL always carries the reason and a 'talk to a human' hand-off"],
-            ["LLM or vision API down or over quota during a demo", "Provider chain with fallbacks; cached demo replies; the engine and validators run offline. The journey completes with no model at all"],
-            ["Fibre not feasible, install delays", "5G AirFiber as a 2-day interim line; install days stated on the quote; tracker dates"],
-            ["Channel conflict with partners and field sales", "Partner code on every journey; propensity queue routes high-value leads to humans; micro retail digital-only"],
-            ["Privacy and DPDP exposure", "Consent gate (403), masking everywhere, retention purge, erasure, staff-only back office, audit log"],
-            ["Low-quality leads from digital channels", "Mobile number verified by one-time code at entry; GST status checked live"]]
-    table(s, 0.5, 1.72, 5.9, 3.3, rows, [2.1, 3.8], size=7.8, zebra=True)
-    card(s, 6.6, 1.72, 2.95, 3.3, fill=TINT, line_color=TINT)
-    text(s, 6.75, 1.8, 2.7, 0.3, "Built and verified", size=11, bold=True, color=RED)
-    proof = [("2,050", "automated tests, all green in CI"), ("30 / 30", "advisor scenarios through the rules engine"), ("12 / 12", "KYC verdicts matching the answer key"),
-             ("16 / 16", "live conversations on Gemini, zero rule violations"), ("Docker", "compose build and smoke test on every push")]
-    y = 2.15
     for num, lab in proof:
-        text(s, 6.75, y, 1.0, 0.3, num, size=13, bold=True, color=DARK)
-        text(s, 7.7, y + 0.04, 1.8, 0.4, lab, size=7.8, color=INK2, line=1.05)
-        y += 0.44
-    text(s, 6.75, 4.42, 2.7, 0.6, [[("Try it: ", {"bold": True}), ("the README's step-by-step guide takes a judge from clone to a verified API in 20 minutes, no keys needed.", {})]], size=7.6, color=DARK, line=1.1)
-    source(s, "Repository: github.com/Sheel23501/udyam-digital · docs/how-to-check.md · docs/privacy-note.md · docs/architecture.png")
+        card(s, x, 4.55, 2.15, 0.5, fill=TINT, line_color=TINT)
+        text(s, x + 0.08, 4.6, 0.85, 0.4, num, size=12, bold=True, color=RED, anchor=MSO_ANCHOR.MIDDLE)
+        text(s, x + 0.9, 4.6, 1.22, 0.4, lab, size=7.2, color=INK2, anchor=MSO_ANCHOR.MIDDLE, line=1.0)
+        x += 2.28
+    source(s, "Live prototype and code are linked on the title slide. Step-by-step checks: docs/how-to-check.md. Privacy note and architecture diagram are submitted separately.")
     return s
 
 
@@ -494,7 +471,7 @@ def main() -> int:
     xml = re.sub(r'(<a:(?:hlink|folHlink)>\s*<a:srgbClr val=")[0-9A-Fa-f]{6}', r'\1FFFFFF', xml)
     theme._blob = xml.encode("utf-8")
     slide_title(prs, title_bg)
-    for fn in (slide_leak, slide_segments, slide_bundles, slide_architecture, slide_kyc, slide_field, slide_rollout, slide_metrics, slide_risks):
+    for fn in (slide_leak, slide_architecture, slide_kyc, slide_competitive, slide_impact, slide_rollout_risks):
         fn(prs, body_bg)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     prs.save(str(OUT))
