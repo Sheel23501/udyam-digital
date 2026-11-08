@@ -29,6 +29,10 @@ def _send(phone: str) -> None:
             st.error(t("otp_wait", s=d.get("retry_after", 30)))
         else:
             st.error(t("otp_send_failed"))
+            # operator hint: why sending failed and which SMS mode the server is in (never contains secrets)
+            mode = (api.health() or {}).get("otp_mode", "unknown")
+            st.caption(f"Details for the operator: {code or e.status} · {d.get('reason') or e.text()} · SMS mode: {mode}. "
+                       "To use the on-screen demo code, remove SMS_PROVIDER from the app's secrets.")
         return
     ss.otp = {**r, "sent_at": time.time()}
     ss.pop("otp_code", None)

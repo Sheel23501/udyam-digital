@@ -12,7 +12,7 @@
     {
       "code": "IMAGE_SKEWED",
       "status": "REVIEW",
-      "evidence": "skew=7.0° (1446x1894)",
+      "evidence": "skew=6.9° (1446x1894)",
       "message_en": "Your gst certificate is rotated/tilted. Please place the document flat and photograph it straight on.",
       "message_hi": "GST प्रमाणपत्र की फ़ोटो तिरछी है। कृपया दस्तावेज़ सीधा रखकर फ़ोटो लें।"
     },

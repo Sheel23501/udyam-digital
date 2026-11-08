@@ -725,3 +725,13 @@ def test_guard_does_not_flag_names_inside_bundled_product_descriptions():
     assert "P02" in {i.product_id for i in st.recommendation.items}
     text = "Biz Fibre 300 – 300 Mbps fibre, unlimited data, Static IP optional."
     assert chat._guard(text, st) == text and not st.warnings
+
+
+def test_certain_facts_fill_a_generic_business_type_when_the_model_misses_it():
+    st = State()
+    got = chat._certain_facts(st, "दिल्ली में साड़ी की दुकान, पाँच लोग, दो दुकानें, GST है। कार्ड मशीन बार-बार बंद होती है।")
+    assert got["business_type"] == "sari shop" and got["employee_count"] == 5 and got["num_sites"] == 2
+    assert got["city"] == "Delhi" and got["has_gstin"] is True and "pos_drops" in got["needs"]
+    st2 = State()
+    dispatch("update_profile", {"business_type": "Saree retail"}, st2)
+    assert "business_type" not in chat._certain_facts(st2, "मेरी साड़ी की दुकान है")       # never overrides

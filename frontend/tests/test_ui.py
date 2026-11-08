@@ -214,3 +214,27 @@ print("OK")
 '''.format(front=str(FRONT), app=str(FRONT / "app.py"))
     r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=180, env={**os.environ})
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout + r.stderr
+
+
+def test_sms_failure_explains_itself_to_the_operator():
+    """A misconfigured SMS provider shows the generic owner message plus the operator reason and SMS mode."""
+    import subprocess
+    code = r'''
+import os, sys
+os.environ.update({"API_MODE": "inprocess", "ADVISOR_OFFLINE": "1", "SMS_PROVIDER": "messagecentral",
+                   "MC_CUSTOMER_ID": "", "MC_EMAIL": "", "MC_PASSWORD": ""})
+sys.path.insert(0, __FRONT__)
+from streamlit.testing.v1 import AppTest
+at = AppTest.from_file(__APP__, default_timeout=60); at.run()
+at.button(key="lang_en").click().run()
+at.text_input(key="phone").set_value("9__REST__").run()
+at.button(key="send_otp").click().run()
+assert any("could not send" in e.value for e in at.error), [e.value for e in at.error]
+cap = " ".join(c.value for c in at.caption)
+assert "missing its credentials" in cap and "misconfigured" in cap, cap
+print("OK")
+'''.replace("__FRONT__", repr(str(FRONT))).replace("__APP__", repr(str(FRONT / "app.py"))).replace(
+        "__REST__", "".join(random.choice("0123456789") for _ in range(9)))
+    import subprocess as sp
+    r = sp.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=180)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout + r.stderr

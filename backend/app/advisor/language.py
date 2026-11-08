@@ -195,7 +195,7 @@ def read_facts(text: str, pending: str | None, cities: dict[str, int], business_
     """Facts stated in one owner message, as update_profile arguments.
 
     strict=True (used alongside a live LLM) keeps only the unambiguous readings: known cities only (no "in <Word>"
-    guess), dataset business types only (no generic "shop"), and nothing from questions ("do I need GST?")."""
+    guess) and nothing from questions ("do I need GST?")."""
     if strict and "?" in (text or ""):
         return {}
     low = (text or "").lower().translate(DEVANAGARI_DIGITS)
@@ -233,8 +233,8 @@ def read_facts(text: str, pending: str | None, cities: dict[str, int], business_
         if re.search(rf"\b{re.escape(bt)}\b", low):
             out["business_type"] = bt
             break
-    if "business_type" not in out and not strict:
-        for pattern, label in GENERIC_BUSINESS:
+    if "business_type" not in out:                          # generic label ("sari shop", "clinic"); strict callers only
+        for pattern, label in GENERIC_BUSINESS:               # use it to fill an empty field, never to override
             if re.search(pattern, low):
                 out["business_type"] = label
                 break
