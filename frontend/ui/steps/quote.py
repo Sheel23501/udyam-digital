@@ -20,6 +20,8 @@ def render() -> None:
     cards.header(2)
     st.markdown(f"### {t('quote_title')}")
     st.caption(t("quote_sub"))
+    if ss.get("partner"):
+        st.caption("🤝 " + t("partner_banner", code=ss.partner))
     rec = ss.get("recommendation")
     if not rec:
         st.button(t("back_chat"), key="back_chat_empty", on_click=nav.set_step, args=("chat",))

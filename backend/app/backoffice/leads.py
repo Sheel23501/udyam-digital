@@ -69,7 +69,8 @@ def _value_for(lead_id: str) -> int:
     return recommend(lead_profile(dict(row))).monthly_min if row else 0
 
 
-def score_lead(row: dict) -> dict:
+def heuristic_score(row: dict) -> dict:
+    """Transparent fallback (and the source of the suggested action): recoverability of the drop reason, stage, GST, spend."""
     recover, action = DROP_REASONS.get(row.get("drop_reason") or "", (0.40, "Call back with the self-serve link"))
     stage = STAGE_WEIGHT.get(row.get("stage_reached") or "", 0.1)
     gst = 1.0 if row.get("has_gstin") == "Y" else 0.3
@@ -82,7 +83,23 @@ def score_lead(row: dict) -> dict:
         (0.10 * gst, "GST registered: full catalogue eligible" if gst == 1.0 else "no GST: GST-free bundle only"),
         (0.15 * value, f"pays ₹{spend:,}/month today" if spend else "current spend unknown"),
     ], key=lambda x: -x[0])
-    return {"score": score, "reasons": [r for _, r in reasons[:3]], "suggested_action": action}
+    return {"score": score, "reasons": [r for _, r in reasons[:3]], "suggested_action": action, "model": "heuristic"}
+
+
+def score_lead(row: dict) -> dict:
+    """Propensity model when available: P(activate) blended with recoverability of the drop reason and the stage reached,
+    so a lead that is likely to buy but dropped for a hard-to-fix reason ranks below one that is easy to win back."""
+    h = heuristic_score(row)
+    try:
+        from . import propensity  # noqa: PLC0415 — sklearn import kept out of the hot path until needed
+        p = propensity.score(row)
+        recover = DROP_REASONS.get(row.get("drop_reason") or "", (0.40, ""))[0]
+        stage = STAGE_WEIGHT.get(row.get("stage_reached") or "", 0.1)
+        score = round(0.55 * p + 0.30 * recover + 0.15 * stage, 2)
+        reasons = [f"model: {p:.0%} chance to activate"] + propensity.explain(row, 2) + [h["reasons"][0]]
+        return {"score": score, "reasons": reasons[:4], "suggested_action": h["suggested_action"], "model": "propensity", "p_activate": round(p, 3)}
+    except Exception:  # noqa: BLE001 — no sklearn / training failure: the queue still works
+        return h
 
 
 def score_session(s: dict) -> dict:
@@ -96,14 +113,12 @@ def score_session(s: dict) -> dict:
     reasons = [f"journey stopped at '{status}'" + (f": {s['handoff_reason']}" if s.get("handoff_reason") else ""),
                "GST registered" if gst == 1.0 else "no GST / unknown",
                f"quoted ₹{rec.get('monthly_min', 0):,}/month" if rec else "no quote yet"]
-    return {"score": score, "reasons": reasons, "suggested_action": SESSION_ACTION.get(status, "Call back")}
+    return {"score": score, "reasons": reasons, "suggested_action": SESSION_ACTION.get(status, "Call back"), "model": "journey"}
 
 
 def sample_dropped(n: int = 200, seed: int = 42) -> list[dict]:
     rows = [dict(r) for r in connect().execute(
-        "SELECT lead_id, business_name, business_type, segment, city, city_tier, preferred_language, employee_count, num_sites, has_gstin, "
-        "products_of_interest, stage_reached, drop_reason, monthly_telecom_spend_inr, lead_source, created_date "
-        "FROM smb_leads WHERE outcome = 'Dropped' AND stage_reached != 'Lead' ORDER BY lead_id").fetchall()]
+        "SELECT * FROM smb_leads WHERE outcome = 'Dropped' AND stage_reached != 'Lead' ORDER BY lead_id").fetchall()]
     random.Random(seed).shuffle(rows)
     out = []
     for r in rows[:n]:
@@ -113,7 +128,7 @@ def sample_dropped(n: int = 200, seed: int = 42) -> list[dict]:
             "segment": r["segment"], "city": r["city"], "language": r["preferred_language"],
             "est_monthly_value": _value_for(r["lead_id"]), "last_step": r["stage_reached"], "reason": r["drop_reason"],
             "lead_source": r["lead_source"], "partner": r["lead_source"] if r["lead_source"] == "Channel partner" else None,
-            "score": sc["score"], "suggested_action": sc["suggested_action"], "date": r["created_date"],
+            "score": sc["score"], "p_activate": sc.get("p_activate"), "suggested_action": sc["suggested_action"], "date": r["created_date"],
         })
     return out
 

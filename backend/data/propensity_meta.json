@@ -1,0 +1,88 @@
+{
+  "trained_at": "2026-11-08T16:20:55+00:00",
+  "rows": 5000,
+  "positives": 368,
+  "auc_holdout": 0.679,
+  "auc_train": 0.737,
+  "model": "LogisticRegression(C=0.5, balanced)",
+  "features": [
+    "segment",
+    "lead_source",
+    "preferred_language",
+    "current_internet",
+    "city_tier",
+    "log_employees",
+    "num_sites",
+    "has_gstin",
+    "has_udyam",
+    "log_spend",
+    "n_products",
+    "turnover_ord"
+  ],
+  "excluded_on_purpose": [
+    "drop_reason (only dropped leads have one)",
+    "stage_reached and follow-up calls (post-contact; score must work on a brand-new lead)"
+  ],
+  "top_coefficients": [
+    {
+      "feature": "lead_source_WhatsApp campaign",
+      "coef": -0.962
+    },
+    {
+      "feature": "lead_source_Referral",
+      "coef": 0.952
+    },
+    {
+      "feature": "segment_Micro retail & services",
+      "coef": -0.809
+    },
+    {
+      "feature": "has_gstin",
+      "coef": 0.593
+    },
+    {
+      "feature": "lead_source_Website form",
+      "coef": -0.574
+    },
+    {
+      "feature": "preferred_language_Tamil",
+      "coef": -0.475
+    },
+    {
+      "feature": "segment_Small multi-site businesses",
+      "coef": 0.337
+    },
+    {
+      "feature": "lead_source_Inbound call",
+      "coef": 0.335
+    },
+    {
+      "feature": "preferred_language_Kannada",
+      "coef": -0.323
+    },
+    {
+      "feature": "segment_Small manufacturers",
+      "coef": 0.296
+    },
+    {
+      "feature": "preferred_language_Hindi",
+      "coef": 0.289
+    },
+    {
+      "feature": "city_tier_2",
+      "coef": -0.268
+    },
+    {
+      "feature": "current_internet_Leased line",
+      "coef": 0.259
+    },
+    {
+      "feature": "preferred_language_English",
+      "coef": 0.248
+    },
+    {
+      "feature": "current_internet_Mixed per site",
+      "coef": 0.248
+    }
+  ]
+}

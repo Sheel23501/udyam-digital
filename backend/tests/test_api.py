@@ -275,16 +275,20 @@ def test_backoffice_queue_mixes_sessions_and_sample_leads_with_scores():
     assert sample and all(0 <= x["score"] <= 1 and x["suggested_action"] and x["est_monthly_value"] >= 0 for x in sample)
     assert rows == sorted(rows, key=lambda x: (-x["score"], -x["est_monthly_value"]))
     d = client.get(f"/backoffice/leads/{sample[0]['id']}/score").json()
-    assert d["score"] == sample[0]["score"] and len(d["reasons"]) == 3
+    assert d["score"] == sample[0]["score"] and 3 <= len(d["reasons"]) <= 4
     assert client.get(f"/backoffice/leads/{sid}/score").json()["suggested_action"].startswith("Owner asked")
     assert client.get("/backoffice/leads/L99999/score").status_code == 404
 
 
 def test_scoring_prefers_recoverable_drops():
-    from app.backoffice.leads import score_lead
-    easy = score_lead({"drop_reason": "Quote took too long to arrive", "stage_reached": "Quote accepted", "has_gstin": "Y", "monthly_telecom_spend_inr": "4000"})
-    hard = score_lead({"drop_reason": "Wrong or invalid number", "stage_reached": "Lead", "has_gstin": "N", "monthly_telecom_spend_inr": ""})
-    assert easy["score"] > 0.7 > 0.3 > hard["score"] and "one-number quote" in easy["suggested_action"]
+    from app.backoffice.leads import heuristic_score, score_lead
+    easy = {"drop_reason": "Quote took too long to arrive", "stage_reached": "Quote accepted", "has_gstin": "Y", "monthly_telecom_spend_inr": "4000",
+            "segment": "Professional offices", "lead_source": "Website form", "city_tier": "1"}
+    hard = {"drop_reason": "Wrong or invalid number", "stage_reached": "Lead", "has_gstin": "N", "monthly_telecom_spend_inr": "",
+            "segment": "Micro retail & services", "lead_source": "WhatsApp campaign", "city_tier": "2"}
+    h_easy, h_hard = heuristic_score(easy), heuristic_score(hard)
+    assert h_easy["score"] > 0.7 > 0.3 > h_hard["score"] and "one-number quote" in h_easy["suggested_action"]
+    assert score_lead(easy)["score"] > score_lead(hard)["score"]
 
 
 # ---------- retention / erasure ----------

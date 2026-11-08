@@ -56,6 +56,10 @@ with tab_queue:
     if source != "all":
         df = df[df["source"] == source]
     df = df[df["score"] >= min_score]
+    partners = ["all"] + sorted({p for p in df["partner"].dropna().unique()}) if "partner" in df else ["all"]
+    partner = st.selectbox("Partner", partners, key="f_partner")
+    if partner != "all":
+        df = df[df["partner"] == partner]
     st.caption(f"{len(df)} leads · total est. value ₹{int(df['est_monthly_value'].sum()):,}/month")
     st.dataframe(
         df[["id", "source", "business", "segment", "city", "language", "est_monthly_value", "last_step", "reason", "score", "suggested_action", "partner", "date"]],
