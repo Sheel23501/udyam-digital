@@ -13,3 +13,5 @@ frontend/.streamlit/secrets.toml
 *.joblib
 .DS_Store
 .pytest_cache/
+# generated from .env for pasting into Streamlit Cloud; never commit
+STREAMLIT_CLOUD_SECRETS.toml

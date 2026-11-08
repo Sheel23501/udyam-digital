@@ -66,6 +66,9 @@ def _inprocess_client():
     return client
 
 
+LAST_ERROR: dict = {"inprocess": None, "http": None}
+
+
 @st.cache_resource(show_spinner=False)
 def mode() -> str:
     if MODE_SETTING in ("http", "inprocess"):
@@ -73,12 +76,27 @@ def mode() -> str:
     try:
         requests.get(BASE + "/health", timeout=2).raise_for_status()
         return "http"
-    except Exception:  # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
+        LAST_ERROR["http"] = f"{type(e).__name__}: {e}"
         try:
             _inprocess_client()
             return "inprocess"
-        except Exception:  # noqa: BLE001
+        except Exception as e2:  # noqa: BLE001
+            LAST_ERROR["inprocess"] = f"{type(e2).__name__}: {e2}"
             return "http"
+
+
+def diagnostics() -> dict:
+    """What the page shows under the 'starting up' notice so a broken deploy explains itself."""
+    info = {"mode_setting": MODE_SETTING, "mode": mode(), "backend_url": BASE, "python": sys.version.split()[0]}
+    if mode() == "inprocess" or MODE_SETTING == "inprocess":
+        try:
+            _inprocess_client()
+            info["inprocess"] = "ok"
+        except Exception as e:  # noqa: BLE001
+            info["inprocess"] = f"{type(e).__name__}: {e}"
+    info.update({k: v for k, v in LAST_ERROR.items() if v})
+    return info
 
 
 def _handle(r):
@@ -93,7 +111,11 @@ def _handle(r):
 
 def _call(method: str, path: str, **kw):
     if mode() == "inprocess":
-        c = _inprocess_client()
+        try:
+            c = _inprocess_client()
+        except Exception as e:  # noqa: BLE001 — missing backend package on the host: report, don't crash the page
+            LAST_ERROR["inprocess"] = f"{type(e).__name__}: {e}"
+            raise ApiError(0, f"in-process backend failed to start: {type(e).__name__}: {e}") from e
         return _handle(getattr(c, method)(path, **kw))
     try:
         return _handle(requests.request(method.upper(), BASE + path, timeout=TIMEOUT, **kw))

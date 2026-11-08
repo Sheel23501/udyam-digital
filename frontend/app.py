@@ -29,6 +29,10 @@ if ss.step != "language":
 
 if api.health() is None:
     st.warning(t("backend_down"))
+    with st.expander("Details for the operator"):
+        st.json(api.diagnostics())
+        st.caption("Single-process deploy needs the secret API_MODE = \"inprocess\" and the root requirements.txt "
+                   "(backend packages included). Two-process deploy needs BACKEND_URL pointing at a running API.")
     st.stop()
 
 STEPS[ss.step].render()
