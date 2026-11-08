@@ -78,7 +78,9 @@ an HMAC of it, and sends it through `SMS_PROVIDER`. `POST /auth/otp/verify {requ
 single use, locked after 5 wrong tries) and returns a single-use token that `POST /sessions {otp_token}` turns into a
 phone-verified session; the number itself is stored only as an HMAC and a masked form. Resend cooldown (30 s) and hourly
 caps per number and per client stop SMS-bombing. With no SMS gateway configured (`SMS_PROVIDER=demo`, the default) nothing
-is texted: the API returns the code and the app shows it as a clearly labelled demo SMS. `REQUIRE_OTP=1` makes
+is texted: the API returns the code and the app shows it as a clearly labelled demo SMS. Real SMS: `SMS_PROVIDER=messagecentral`
+(Message Central VerifyNow: no card, no DLT registration of our own, free test credits) or `SMS_PROVIDER=2factor`; both
+generate and check the code on their side, behind the same rate limits. Setup steps: [docs/deploy.md](docs/deploy.md#real-sms-otp). `REQUIRE_OTP=1` makes
 verification mandatory for API clients too (the UI always verifies).
 
 ## Advisor on free tiers

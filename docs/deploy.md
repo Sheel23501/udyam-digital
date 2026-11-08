@@ -44,6 +44,35 @@ same process (`API_MODE = "inprocess"`). Nothing else to host, nothing to pay fo
 - Advisor replies say *"Our assistant is briefly unavailable"* → Groq quota is exhausted or the key is wrong; the quote
   is still correct (engine), only the prose is plainer. Check `GROQ_API_KEY`.
 
+## Real SMS OTP
+
+Without an SMS provider the app runs in demo mode: every request still gets its own random 6-digit code, shown on screen as
+a labelled demo SMS. To text real codes to Indian numbers (no card, no DLT registration of your own):
+
+1. Sign up at **https://console.messagecentral.com/signup** (Message Central VerifyNow) with an email and a password.
+2. On the console home page copy your **customer id** (`C-XXXXXXXX`) and note the free test credit balance.
+3. Add to `.env` (local) and to the app's **Secrets** (Streamlit Cloud):
+   ```toml
+   SMS_PROVIDER = "messagecentral"
+   MC_CUSTOMER_ID = "C-XXXXXXXX"
+   MC_EMAIL = "you@example.com"
+   MC_PASSWORD = "your-console-password"
+   ```
+4. Restart / save secrets. `GET /health` should show `"otp_mode": "sms:messagecentral"`.
+5. **Day-1 test:** request a code for your own number **and** a friend's number on a different network. Both should
+   arrive (sender `UTOMOB`, text ending "Powered by U2opia"), and the console balance should drop. If the friend's
+   number does not receive it, the trial is limited to your own number: switch to the backup below.
+
+Notes: Message Central codes are valid for 60 seconds by default (configurable 20–300 s in their console), and the app
+shows that timer. Our own limits still apply in front of the provider: 30-second resend cooldown, 5 codes per number per
+hour, 5 tries per code. After the free credits it costs about ₹0.30 per delivered SMS.
+
+**Backup: 2Factor.in.** Sign up at 2factor.in (email + phone; free test credits), copy the API key, then set
+`SMS_PROVIDER = "2factor"` and `TWOFACTOR_API_KEY = "..."`. It uses their default OTP template.
+
+Providers ruled out for a no-card demo: Twilio, Vonage, Plivo, Infobip and Sinch trials can only text pre-verified
+numbers, so a judge's own phone would not receive the code.
+
 ## B. Two services (API on Render, UI on Streamlit Cloud)
 
 Use this only if you want the HTTP API itself public for judges (e.g. to share `/docs`).

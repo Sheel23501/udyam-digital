@@ -177,14 +177,17 @@ def request_code(raw_phone: str, client_ip: str | None = None) -> dict:
     code = None if prov.verifies_itself else f"{secrets.randbelow(10 ** OTP_LENGTH):0{OTP_LENGTH}d}"
     try:
         result = prov.send(phone10, code, ttl_s())
+    except sms.SmsTooSoon as e:
+        raise OtpError(429, "resend_too_soon", f"Please wait {e.retry_after} seconds before asking for a new code.", retry_after=e.retry_after) from None
     except sms.SmsError as e:
         raise OtpError(502, "sms_failed", "We could not send the code. Please check the number and try again.", reason=str(e)) from None
+    valid_for = min(ttl_s(), result.ttl_s) if result.ttl_s else ttl_s()     # provider codes may expire sooner (e.g. 60 s)
     con = _db()
     con.execute(
         "INSERT INTO otp_requests(id, phone_hash, phone_masked, code_hash, created, expires, ip_hash, provider, provider_ref) VALUES (?,?,?,?,?,?,?,?,?)",
-        (request_id, ph, mask_phone(phone10), _code_hash(request_id, code) if code else None, now, now + ttl_s(), iph, prov.name, result.ref))
+        (request_id, ph, mask_phone(phone10), _code_hash(request_id, code) if code else None, now, now + valid_for, iph, prov.name, result.ref))
     con.commit()
-    out = {"request_id": request_id, "phone_masked": mask_phone(phone10), "expires_in": ttl_s(), "resend_in": cooldown_s(),
+    out = {"request_id": request_id, "phone_masked": mask_phone(phone10), "expires_in": valid_for, "resend_in": max(cooldown_s(), min(valid_for, 60) if result.ttl_s else 0),
            "length": OTP_LENGTH, "provider": prov.name, "demo": prov.demo}
     if prov.demo:
         out["demo_code"] = result.demo_code
@@ -211,12 +214,18 @@ def verify_code(request_id: str, code: str) -> dict:
     entered = re.sub(r"\D", "", code or "")
     if row["code_hash"]:
         ok = len(entered) == OTP_LENGTH and hmac.compare_digest(row["code_hash"], _code_hash(request_id, entered))
+    elif len(entered) != OTP_LENGTH:
+        ok = False                                            # malformed: count the try without asking the provider
     else:
         try:
-            prov = sms.PROVIDERS[row["provider"]]()
-            ok = bool(entered) and prov.verify(row["provider_ref"], "", entered)
+            status = sms.PROVIDERS[row["provider"]]().verify(row["provider_ref"], entered)
         except (KeyError, sms.SmsError):
             raise OtpError(503, "sms_unavailable", "We could not check the code right now. Please try again shortly.") from None
+        if status == sms.EXPIRED:
+            raise OtpError(410, "expired", "This code has expired. Please ask for a new code.")
+        if status == sms.USED:
+            raise OtpError(409, "already_used", "This code was already used. Please ask for a new code.")
+        ok = status == sms.OK
     if not ok:
         left = max(0, max_attempts() - attempts)
         if left == 0:
