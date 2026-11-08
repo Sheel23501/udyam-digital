@@ -36,12 +36,36 @@ SOURCE = f"Source: smb_leads.csv, {NUMBERS['leads']:,} leads ({NUMBERS['period']
 
 
 # ---------------------------------------------------------------- helpers
+def erase(im, box, ref_top, ref_bottom):
+    """Paint a box out by blending, column by column, the rows just above and just below it."""
+    from PIL import ImageFilter
+    x0, y0, x1, y1 = box
+    px = im.load()
+    for x in range(x0, x1):
+        top = [px[x, y] for y in range(ref_top - 2, ref_top + 1)]
+        bot = [px[x, y] for y in range(ref_bottom, ref_bottom + 3)]
+        t = tuple(sum(c[i] for c in top) // len(top) for i in range(3))
+        b = tuple(sum(c[i] for c in bot) // len(bot) for i in range(3))
+        for y in range(y0, y1):
+            f = (y - y0) / max(y1 - y0 - 1, 1)
+            px[x, y] = tuple(round(t[i] * (1 - f) + b[i] * f) for i in range(3))
+    soft = im.crop((x0 - 6, y0 - 6, x1 + 6, y1 + 6)).filter(ImageFilter.GaussianBlur(2))
+    im.paste(soft.crop((6, 6, 6 + x1 - x0, 6 + y1 - y0)), (x0, y0))
+
+
 def extract_backgrounds() -> tuple[Path, Path]:
+    from PIL import Image
     WORK.mkdir(parents=True, exist_ok=True)
     z = zipfile.ZipFile(TEMPLATE)
     title_bg, body_bg = WORK / "title_bg.jpg", WORK / "body_bg.jpg"
-    title_bg.write_bytes(z.read("ppt/media/image2.jpg"))      # slide 1 of the template
-    body_bg.write_bytes(z.read("ppt/media/image1.jpg"))       # slide 2 of the template
+    for src, dst, box, rt, rb in (("ppt/media/image2.jpg", title_bg, (1490, 998, 1900, 1046), 1050, 1050),   # slide 1 of the template
+                                  ("ppt/media/image1.jpg", body_bg, (1585, 1000, 1915, 1062), 996, 1064)):  # slide 2 of the template
+        dst.write_bytes(z.read(src))
+        im = Image.open(dst).convert("RGB")
+        erase(im, box, rt, rb)                                  # removes the "Platform Partner unstop" mark
+        if dst == title_bg:
+            erase(im, (1745, 984, 1808, 1000), 1050, 1050)      # top edge of the logo circle
+        im.save(dst, quality=95)
     return title_bg, body_bg
 
 
@@ -181,6 +205,33 @@ def bundle(profile: Profile) -> dict:
 
 
 # ---------------------------------------------------------------- slides
+LIVE_URL = "https://udyam-digital-isyfatadrab4adtbqddzwp.streamlit.app"
+REPO_URL = "https://github.com/Sheel23501/udyam-digital"
+
+
+def link_button(slide, x, y, w, label, shown, url, fill, outline=None):
+    """A pill that opens `url` on click (the whole shape and the text are both links)."""
+    sh = rect(slide, x, y, w, 0.38, fill=fill, line_color=outline, shape=MSO_SHAPE.ROUNDED_RECTANGLE, radius=0.5, line_w=1.5)
+    sh.click_action.hyperlink.address = url
+    tf = sh.text_frame
+    tf.margin_left = Inches(0.18)
+    tf.margin_right = Inches(0.1)
+    tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+    tf.word_wrap = False
+    p = tf.paragraphs[0]
+    p.alignment = PP_ALIGN.LEFT
+    for seg, bold, size in ((label + "   ", True, 8.5), (shown, True, 11)):
+        r = p.add_run()
+        r.text = seg
+        r.font.name = FONT
+        r.font.size = Pt(size)
+        r.font.bold = bold
+        r.font.color.rgb = WHITE
+        if seg == shown:
+            r.hyperlink.address = url
+    return sh
+
+
 def slide_title(prs, bg):
     s = new_slide(prs, bg)                                     # the SYNC wordmark sits at y 1.85-2.5 in; everything goes below it
     rect(s, 0.55, 2.75, 0.08, 1.35, fill=RED)
@@ -188,11 +239,10 @@ def slide_title(prs, bg):
     text(s, 0.75, 2.9, 5.2, 0.7, "Udyam Digital", size=36, bold=True, color=WHITE)
     text(s, 0.75, 3.55, 5.0, 0.7, "A small business goes live in one sitting: on a phone, in Hindi or English, with no salesperson in the loop.",
          size=13, color=RGBColor(0xF3, 0xF4, 0xF6), line=1.2)
-    text(s, 0.75, 4.35, 5.4, 0.85, [
-        [("Live prototype  ", {"bold": True, "color": WHITE}), ("udyam-digital-isyfatadrab4adtbqddzwp.streamlit.app", {"color": RGBColor(0xF3, 0xF4, 0xF6)})],
-        [("Code  ", {"bold": True, "color": WHITE}), ("github.com/Sheel23501/udyam-digital", {"color": RGBColor(0xF3, 0xF4, 0xF6)})],
-        [("Team: Sheel Gautam (IIIT Delhi) and Vikas Meena · November 2026", {"color": RGBColor(0xD1, 0xD5, 0xDB)})],
-    ], size=10, line=1.3)
+    text(s, 0.75, 4.12, 5.6, 0.3, [[("Sheel Gautam · Vikas Meena", {"bold": True, "color": WHITE, "size": 12}),
+                                    ("   IIIT Delhi · November 2026", {"color": RGBColor(0xD1, 0xD5, 0xDB), "size": 10})]])
+    link_button(s, 0.75, 4.55, 5.55, "LIVE PROTOTYPE", "udyam-digital-isyfatadrab4adtbqddzwp.streamlit.app", LIVE_URL, RED)
+    link_button(s, 0.75, 5.0, 5.55, "CODE ON GITHUB", "github.com/Sheel23501/udyam-digital", REPO_URL, RGBColor(0x1A, 0x1A, 0x1A), outline=WHITE)
     return s
 
 
@@ -437,6 +487,12 @@ def main() -> int:
     title_bg, body_bg = extract_backgrounds()
     prs = Presentation(str(TEMPLATE))
     clear_slides(prs)
+    import re
+    from pptx.opc.constants import RELATIONSHIP_TYPE as RT
+    theme = prs.slide_layouts[10].slide_master.part.part_related_by(RT.THEME)
+    xml = theme.blob.decode("utf-8")
+    xml = re.sub(r'(<a:(?:hlink|folHlink)>\s*<a:srgbClr val=")[0-9A-Fa-f]{6}', r'\1FFFFFF', xml)
+    theme._blob = xml.encode("utf-8")
     slide_title(prs, title_bg)
     for fn in (slide_leak, slide_segments, slide_bundles, slide_architecture, slide_kyc, slide_field, slide_rollout, slide_metrics, slide_risks):
         fn(prs, body_bg)
