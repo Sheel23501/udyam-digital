@@ -55,7 +55,8 @@ def get(session_id: str) -> dict | None:
         "profile": json.loads(d["profile_json"]) if d["profile_json"] else None,
         "recommendation": json.loads(d["recommendation_json"]) if d["recommendation_json"] else None,
     }
-    kyc = connect().execute("SELECT id, verdict, ts FROM kyc_applications WHERE session_id = ? ORDER BY ts DESC LIMIT 1", (session_id,)).fetchone()
+    kyc = connect().execute("SELECT id, verdict, ts FROM kyc_applications WHERE session_id = ? ORDER BY ts DESC, rowid DESC LIMIT 1",
+                            (session_id,)).fetchone()
     out["kyc_application_id"] = kyc["id"] if kyc else None
     out["kyc_verdict"] = kyc["verdict"] if kyc else None
     order = connect().execute("SELECT id, status FROM orders WHERE session_id = ? ORDER BY created DESC LIMIT 1", (session_id,)).fetchone()

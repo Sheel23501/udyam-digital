@@ -1,3 +1,4 @@
 streamlit>=1.40
 requests
 pandas
+httpx                      # in-process API mode (API_MODE=inprocess) uses FastAPI's TestClient

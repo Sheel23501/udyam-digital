@@ -1,0 +1,108 @@
+"""HTTP client for the FastAPI backend, with an in-process fallback.
+
+Modes (API_MODE in .streamlit/secrets.toml or the environment):
+  http       - call BACKEND_URL over HTTP (default when the backend answers /health)
+  inprocess  - import the backend package and call it through FastAPI's TestClient in this process
+               (lets `streamlit run frontend/app.py` work with no second process, e.g. on Streamlit Community Cloud)
+  auto       - http if reachable, else inprocess (default)
+"""
+import os
+import sys
+from pathlib import Path
+
+import requests
+import streamlit as st
+
+
+class ApiError(Exception):
+    def __init__(self, status: int, detail):
+        self.status = status
+        self.detail = detail
+        super().__init__(f"{status}: {detail}")
+
+    def text(self) -> str:
+        d = self.detail
+        if isinstance(d, dict):
+            return str(d.get("message") or d)
+        return str(d)
+
+
+def _setting(name: str, default: str | None = None) -> str | None:
+    try:
+        if name in st.secrets:
+            return str(st.secrets[name])
+    except Exception:  # noqa: BLE001 — no secrets.toml is normal locally
+        pass
+    return os.getenv(name, default)
+
+
+BASE = (_setting("BACKEND_URL", "http://localhost:8000") or "").rstrip("/")
+MODE_SETTING = (_setting("API_MODE", "auto") or "auto").lower()
+TIMEOUT = float(_setting("API_TIMEOUT_S", "90") or 90)
+
+
+@st.cache_resource(show_spinner=False)
+def _inprocess_client():
+    root = Path(__file__).resolve().parents[1] / "backend"
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    from fastapi.testclient import TestClient  # noqa: PLC0415
+    from app.main import app  # noqa: PLC0415
+
+    client = TestClient(app)
+    client.__enter__()                      # run the lifespan (builds the SQLite DB) once
+    return client
+
+
+@st.cache_resource(show_spinner=False)
+def mode() -> str:
+    if MODE_SETTING in ("http", "inprocess"):
+        return MODE_SETTING
+    try:
+        requests.get(BASE + "/health", timeout=2).raise_for_status()
+        return "http"
+    except Exception:  # noqa: BLE001
+        try:
+            _inprocess_client()
+            return "inprocess"
+        except Exception:  # noqa: BLE001
+            return "http"
+
+
+def _handle(r):
+    if r.status_code >= 400:
+        try:
+            detail = r.json().get("detail", r.text)
+        except Exception:  # noqa: BLE001
+            detail = r.text
+        raise ApiError(r.status_code, detail)
+    return r.json() if r.content else None
+
+
+def _call(method: str, path: str, **kw):
+    if mode() == "inprocess":
+        c = _inprocess_client()
+        return _handle(getattr(c, method)(path, **kw))
+    try:
+        return _handle(requests.request(method.upper(), BASE + path, timeout=TIMEOUT, **kw))
+    except requests.RequestException as e:
+        raise ApiError(0, f"cannot reach the backend at {BASE}: {e.__class__.__name__}") from e
+
+
+def get(path: str, **params):
+    return _call("get", path, params=params or None)
+
+
+def post(path: str, json=None, data=None, files=None):
+    return _call("post", path, json=json, data=data, files=files)
+
+
+def delete(path: str):
+    return _call("delete", path)
+
+
+def health() -> dict | None:
+    try:
+        return get("/health")
+    except ApiError:
+        return None

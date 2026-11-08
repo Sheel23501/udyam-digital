@@ -17,6 +17,18 @@ pip install -r backend/requirements.txt -r frontend/requirements.txt
 
 Free keys: Groq at console.groq.com, Cerebras at cloud.cerebras.ai, Gemini at aistudio.google.com/apikey. No card needed for any of them.
 
+## The app (Streamlit, phone-shaped)
+
+`./run_local.sh` starts the API on :8000 and the UI on :8501. Or run only `streamlit run frontend/app.py`: when no backend
+answers, the UI imports the backend package and calls it in-process (`API_MODE=auto`), so one process is enough.
+
+Journey: language → mobile + OTP (demo code `1234`) → advisor chat (Hindi / English / Hinglish, example chips) → recommendation card
+drawn from engine JSON → quote with toggles and quantities, every change re-validated → DPDP consent with itemised purposes → Smart KYC
+(upload four photos, or pick sample applicant K01–K12) → order → tracker with dated stages, demo "advance" and consent withdrawal.
+Back-office page (sidebar, staff PIN `1234`): scored queue of unclosed leads, lead detail with reasons, audit log, retention purge, erasure.
+
+Headless UI tests drive the whole journey with Streamlit's `AppTest` and no server: `pytest frontend/tests -q` from the repo root.
+
 ## For judges
 
 All commands run from `backend/` with the virtualenv active.
