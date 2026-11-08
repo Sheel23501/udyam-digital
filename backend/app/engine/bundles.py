@@ -2,6 +2,7 @@
 
 Policy (what to suggest) lives here and may be tuned freely. Rules (what may be sold) live in rules.py and may not.
 """
+import re
 from functools import lru_cache
 
 from ..data.loader import connect
@@ -65,8 +66,8 @@ def infer_segment(prof: Profile) -> str:
     if bt in table:
         return table[bt]
     if bt:
-        for known, seg in table.items():
-            if bt in known or known in bt:
+        for known, seg in table.items():                      # whole-word match: "shop" is a shop, not a "workshop"
+            if re.search(rf"\b{re.escape(bt)}\b", known) or re.search(rf"\b{re.escape(known)}\b", bt):
                 return seg
     if (prof.num_sites or 1) >= 3:
         return "multi"
@@ -127,7 +128,10 @@ def price_summary(items: dict[str, int]) -> dict:
     return {"monthly_min": mn, "monthly_max": mx, "setup": setup, "contract_months": contract, "install_days": install}
 
 
-def recommend(prof: Profile) -> Bundle:
+def recommend(prof: Profile, line_for_addons: bool = False) -> Bundle:
+    """Profile -> Bundle. With services_only the owner keeps their current internet, so dependents whose base line is
+    missing are excluded rather than forcing a line; line_for_addons=True (owner agreed) lets the engine add just the
+    cheapest eligible line those add-ons need, still without a default line or SIMs."""
     cat = catalogue()
     if prof.city_tier not in (1, 2):
         prof.city_tier = tier_for_city(prof.city)
@@ -161,7 +165,7 @@ def recommend(prof: Profile) -> Bundle:
     for pid in requested:
         wanted.setdefault(pid, qty_for(cat[pid], prof, seg) if pid in cat else 1)
 
-    items, excluded, notes = close_dependencies(wanted, prof, allow_auto_base=not services_only)
+    items, excluded, notes = close_dependencies(wanted, prof, allow_auto_base=(not services_only) or line_for_addons)
 
     for ex in list(excluded):
         for fb in FALLBACKS.get(ex.product_id, []):

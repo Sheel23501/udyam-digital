@@ -2,6 +2,8 @@
 __pycache__/
 *.pyc
 *.db
+*.db-shm
+*.db-wal
 .env
 # extraction cache + reports for the 12 sample applicants are committed on purpose (offline demo, quota-free tests)
 backend/data/uploads/

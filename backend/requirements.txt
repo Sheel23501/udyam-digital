@@ -3,6 +3,7 @@ uvicorn[standard]
 pydantic>=2
 pandas
 google-genai
+openai
 python-multipart
 opencv-python-headless
 pillow

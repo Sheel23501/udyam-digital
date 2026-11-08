@@ -12,6 +12,13 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 GEMINI_VISION_MODEL = os.getenv("GEMINI_VISION_MODEL", GEMINI_MODEL)
 
+# Advisor LLM: OpenAI-compatible providers tried in order (see app/llm/providers.py). Keys are read at call time.
+ADVISOR_PROVIDER_CHAIN = os.getenv("ADVISOR_PROVIDER_CHAIN", "groq,cerebras,mistral,openrouter,gemini")
+ADVISOR_MODEL_GROQ = os.getenv("ADVISOR_MODEL_GROQ", "openai/gpt-oss-120b")
+ADVISOR_MODEL_CEREBRAS = os.getenv("ADVISOR_MODEL_CEREBRAS", "gpt-oss-120b")
+ADVISOR_REASONING_EFFORT = os.getenv("ADVISOR_REASONING_EFFORT", "medium")
+ADVISOR_MAX_WAIT_S = float(os.getenv("ADVISOR_MAX_WAIT_S", "20"))
+
 TODAY = date.fromisoformat(os.getenv("TODAY", "2026-07-15"))
 ADDRESS_PROOF_MAX_AGE_DAYS = 90
 

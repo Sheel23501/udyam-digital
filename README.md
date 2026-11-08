@@ -2,21 +2,41 @@
 
 A phone-first, Hindi/English journey that lets a small business owner discover the right Accel Business bundle, get a single-price quote, complete Smart KYC against mock GSTIN/Udyam registries, and track activation — with no salesperson in the loop.
 
-**Stack:** Python 3.13 · FastAPI · SQLite · Streamlit · Gemini (`google-genai`)
+**Stack:** Python 3.13 · FastAPI · SQLite · Streamlit · advisor LLM on Groq `openai/gpt-oss-120b` (OpenAI-compatible, fallback Cerebras → Gemini) · KYC vision on Gemini (`google-genai`). Runs entirely on free tiers.
+
+**Design rule:** the rules engine (`backend/app/engine/`) decides what may be sold; the LLM only asks questions and narrates the engine's result. Every bundle is re-validated before it is shown.
 
 ## Run locally
 
 ```bash
-cp .env.example .env            # add your GEMINI_API_KEY
+cp .env.example .env            # add GROQ_API_KEY (advisor) and GEMINI_API_KEY (KYC vision); CEREBRAS_API_KEY optional
 /opt/homebrew/bin/python3.13 -m venv .venv && source .venv/bin/activate
 pip install -r backend/requirements.txt -r frontend/requirements.txt
 ./run_local.sh                  # backend :8000, UI :8501
 ```
 
+Free keys: Groq at console.groq.com, Cerebras at cloud.cerebras.ai, Gemini at aistudio.google.com/apikey. No card needed for any of them.
+
 ## For judges
 
-- Run your own advisor scenarios: `cd backend && python scripts/run_scenarios.py path/to/scenarios/`
-- Run the KYC report on the 12 sample applicants: `cd backend && python scripts/kyc_report.py data/kyc_documents`
-- Tests: `cd backend && pytest -q`
+All commands run from `backend/` with the virtualenv active.
+
+- **Advisor scenarios as profiles** (rules engine only, instant): `python scripts/run_scenarios.py path/to/folder/` — 30 shipped in `tests/scenarios/`.
+- **Advisor scenarios as transcripts** (live LLM + engine): `python scripts/run_llm_scenarios.py path/to/folder/` — 16 shipped in `tests/llm_scenarios/`. Each turn is typed to the advisor; the check is on the engine result and on `validate()` (zero rule violations), never on the prose. Add `--runs 3` to check flakiness, `--save docs/demo-transcripts.md` to write transcripts.
+- **KYC report** on the 12 sample applicants: `python scripts/kyc_report.py --key tests/kyc_answer_key_images.json` (cached extractions ship in `data/cache/extractions/`, so this needs no API key).
+- **Tests:** `pytest -q` — rules, dependency closure, a 900-profile invariant grid, KYC validators, image gates, and the advisor tool loop with a fake provider (no network).
+
+Scenario JSON formats are documented at the top of each script.
+
+## Advisor on free tiers
+
+Groq's free tier allows 8,000 tokens a minute and **200,000 tokens a day** on `gpt-oss-120b`. One conversation is 5–8 model calls of ~2k tokens (about 10–18k tokens), so a single key covers roughly 15 conversations a day; the provider chain (`ADVISOR_PROVIDER_CHAIN`) moves to Cerebras, Mistral, OpenRouter or Gemini when Groq is busy, skipping any provider without a key.
+
+**Three layers keep the recommendation correct whatever the LLM does:**
+1. The model never picks products. It records facts with `update_profile`; the rules engine returns the bundle, and the model only narrates it. Explicit product asks in the owner's words ("1 Gbps fibre", "toll-free") are recorded by the server even if the model forgets.
+2. Once the five facts are known and the owner has said what they want solved, the server runs the quote itself if the model keeps asking questions.
+3. If every provider is down, `app/advisor/chat.py` reads the facts from the owner's words with rules (`language.read_facts`), asks the next question, and explains the engine result in Hindi or English. All 16 transcript scenarios pass in this mode (`ADVISOR_OFFLINE=1 python scripts/run_llm_scenarios.py --allow-offline`, also a pytest). The cached reply for an exact transcript (`data/cache/advisor/`) is used first when present.
+
+Live transcripts recorded on Groq are in `docs/demo-transcripts.md`.
 
 _Sections below are filled in as the build progresses: architecture, what is mocked vs real, privacy note, known limitations._

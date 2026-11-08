@@ -1,97 +1,645 @@
 [
-  {"name": "01 kirana, no GSTIN, wants WhatsApp API (Lucknow, tier 2)",
-   "profile": {"business_type": "Kirana store", "employee_count": 2, "num_sites": 1, "city": "Lucknow", "has_gstin": false, "needs": ["whatsapp_customers"]},
-   "expect_includes": ["P04", "P07", "P18"], "expect_excludes": {"P15": "GSTIN_REQUIRED"}},
-
-  {"name": "02 tailor, 6 staff, Delhi, asks for Managed Firewall",
-   "profile": {"business_type": "Tailoring shop", "employee_count": 6, "num_sites": 1, "city": "Delhi", "has_gstin": true, "gstin_status": "Active", "requested_products": ["P21"]},
-   "expect_includes": ["P07"], "expect_excludes": {"P21": "MIN_EMPLOYEES"}},
-
-  {"name": "03 salon, 3 staff, Jaipur, 'just cameras, I have a local ISP'",
-   "profile": {"business_type": "Salon", "employee_count": 3, "num_sites": 1, "city": "Jaipur", "has_gstin": false, "current_internet": "Local ISP", "needs": ["cctv"]},
-   "expect_includes": ["P01", "P23"], "expect_not_includes": ["P04"]},
-
-  {"name": "04 clinic, 8 staff, Nagpur (tier 2), wants Fibre 1G",
-   "profile": {"business_type": "Dental clinic", "employee_count": 8, "num_sites": 1, "city": "Nagpur", "has_gstin": true, "gstin_status": "Active", "requested_products": ["P03"]},
-   "expect_includes": ["P02", "P08"], "expect_excludes": {"P03": "TIER_NOT_AVAILABLE"}},
-
-  {"name": "05 clinic, 4 staff, Mumbai, wants Fibre 1G",
-   "profile": {"business_type": "Dental clinic", "employee_count": 4, "num_sites": 1, "city": "Mumbai", "has_gstin": true, "gstin_status": "Active", "requested_products": ["P03"]},
-   "expect_includes": ["P02"], "expect_excludes": {"P03": "MIN_EMPLOYEES"}},
-
-  {"name": "06 restaurant chain, 3 outlets, 25 staff, Bengaluru, GSTIN",
-   "profile": {"business_type": "Restaurant chain", "employee_count": 25, "num_sites": 3, "city": "Bengaluru", "has_gstin": true, "gstin_status": "Active", "needs": ["multi_branch", "cctv"]},
-   "expect_includes": ["P02", "P09", "P10", "P13", "P23", "P08"], "expect_excludes": {}},
-
-  {"name": "07 same chain but no GST yet",
-   "profile": {"business_type": "Restaurant chain", "employee_count": 25, "num_sites": 3, "city": "Bengaluru", "has_gstin": false, "needs": ["multi_branch", "cctv"]},
-   "expect_includes": ["P02", "P09", "P23"], "expect_excludes": {"P10": "GSTIN_REQUIRED", "P13": "GSTIN_REQUIRED"}},
-
-  {"name": "08 auto-parts unit, 12 staff, Pune, machines + security",
-   "profile": {"business_type": "Auto-parts unit", "employee_count": 12, "num_sites": 1, "city": "Pune", "has_gstin": true, "gstin_status": "Active", "needs": ["machines", "data_security"]},
-   "expect_includes": ["P05", "P24", "P21", "P20", "P08"], "expect_excludes": {}},
-
-  {"name": "09 auto-parts unit, 8 staff, Pune, machines + security",
-   "profile": {"business_type": "Auto-parts unit", "employee_count": 8, "num_sites": 1, "city": "Pune", "has_gstin": true, "gstin_status": "Active", "needs": ["machines", "data_security"]},
-   "expect_includes": ["P03", "P20"], "expect_excludes": {"P24": "MIN_EMPLOYEES", "P21": "MIN_EMPLOYEES"}},
-
-  {"name": "10 textile unit, 30 staff, Surat (tier 2), asks for Leased Line 100",
-   "profile": {"business_type": "Textile unit", "employee_count": 30, "num_sites": 1, "city": "Surat", "has_gstin": true, "gstin_status": "Active", "requested_products": ["P06"]},
-   "expect_includes": ["P06", "P08"], "expect_not_includes": ["P05"]},
-
-  {"name": "11 CA firm, 5 staff, Kolkata, wants cloud telephony",
-   "profile": {"business_type": "CA firm", "employee_count": 5, "num_sites": 1, "city": "Kolkata", "has_gstin": true, "gstin_status": "Active", "requested_products": ["P12"]},
-   "expect_includes": ["P02", "P12"], "expect_excludes": {}},
-
-  {"name": "12 CA firm, 2 staff, wants cloud telephony",
-   "profile": {"business_type": "CA firm", "employee_count": 2, "num_sites": 1, "city": "Kolkata", "has_gstin": true, "gstin_status": "Active", "requested_products": ["P12"]},
-   "expect_includes": ["P02"], "expect_excludes": {"P12": "MIN_EMPLOYEES"}},
-
-  {"name": "13 coaching centre with a Cancelled GSTIN wants WhatsApp",
-   "profile": {"business_type": "Coaching centre", "employee_count": 4, "num_sites": 1, "city": "Delhi", "has_gstin": true, "gstin_status": "Cancelled", "needs": ["whatsapp_customers"]},
-   "expect_includes": ["P18"], "expect_excludes": {"P15": "GSTIN_NOT_ACTIVE"}},
-
-  {"name": "17 owner only wants SIMs",
-   "profile": {"business_type": "Stationery shop", "employee_count": 3, "num_sites": 1, "city": "Patna", "has_gstin": false, "needs": ["sim_only"]},
-   "expect_includes": ["P07"], "expect_not_includes": ["P01", "P02", "P04"]},
-
-  {"name": "18 micro shop wants failover (AirFiber cannot carry it)",
-   "profile": {"business_type": "Pharmacy", "employee_count": 2, "num_sites": 1, "city": "Jaipur", "has_gstin": false, "needs": ["uptime"]},
-   "expect_includes": ["P01", "P09"], "expect_not_includes": ["P04"]},
-
-  {"name": "19 owner asks AirFiber + Static IP",
-   "profile": {"business_type": "Kirana store", "employee_count": 2, "num_sites": 1, "city": "Indore", "has_gstin": false, "requested_products": ["P04", "P11"]},
-   "expect_includes": ["P01", "P11"], "expect_not_includes": ["P04"]},
-
-  {"name": "20 factory with leased line wants Secure Wi-Fi",
-   "profile": {"business_type": "Packaging unit", "employee_count": 15, "num_sites": 1, "city": "Ahmedabad", "has_gstin": true, "gstin_status": "Active", "requested_products": ["P05", "P22"]},
-   "expect_includes": ["P05", "P22"], "expect_excludes": {}},
-
-  {"name": "21 one-person pharmacy, no GSTIN, no Udyam, no stated needs",
-   "profile": {"business_type": "Pharmacy", "employee_count": 1, "num_sites": 1, "city": "Patna", "has_gstin": false, "has_udyam": false},
-   "expect_includes": ["P04", "P07"], "expect_not_includes": ["P15", "P14", "P13"]},
-
-  {"name": "25 gym chain, 2 sites, 15 staff, Hyderabad (SD-WAN needs more sites)",
-   "profile": {"business_type": "Gym chain", "employee_count": 15, "num_sites": 2, "city": "Hyderabad", "has_gstin": true, "gstin_status": "Active", "needs": ["multi_branch", "cctv"]},
-   "expect_includes": ["P02", "P09", "P13", "P23"], "expect_excludes": {"P10": "MIN_SITES"}},
-
-  {"name": "26 real estate agency, 7 staff, Ahmedabad, toll-free + SMS",
-   "profile": {"business_type": "Real estate agency", "employee_count": 7, "num_sites": 1, "city": "Ahmedabad", "has_gstin": true, "gstin_status": "Active", "requested_products": ["P13", "P14"]},
-   "expect_includes": ["P13", "P14"], "expect_excludes": {}},
-
-  {"name": "27 same agency, GSTIN Suspended",
-   "profile": {"business_type": "Real estate agency", "employee_count": 7, "num_sites": 1, "city": "Ahmedabad", "has_gstin": true, "gstin_status": "Suspended", "requested_products": ["P13", "P14"]},
-   "expect_includes": ["P02"], "expect_excludes": {"P13": "GSTIN_NOT_ACTIVE", "P14": "GSTIN_NOT_ACTIVE"}},
-
-  {"name": "30 has a competitor leased line, wants only email + security",
-   "profile": {"business_type": "Law office", "employee_count": 12, "num_sites": 1, "city": "Chennai", "has_gstin": true, "gstin_status": "Active", "current_internet": "Leased line", "current_provider": "Competitor A", "needs": ["services_only", "email_docs", "data_security"]},
-   "expect_includes": ["P16", "P20", "P17"], "expect_not_includes": ["P01", "P02", "P03", "P04", "P05", "P06"], "expect_excludes": {"P21": "NEEDS_BASE_LINE"}},
-
-  {"name": "31 unknown city defaults to tier 2 (Fibre 1G not offered)",
-   "profile": {"business_type": "Architect studio", "employee_count": 9, "num_sites": 1, "city": "Shimla", "has_gstin": true, "gstin_status": "Active", "requested_products": ["P03"]},
-   "expect_includes": ["P02"], "expect_excludes": {"P03": "TIER_NOT_AVAILABLE"}},
-
-  {"name": "32 product that does not exist",
-   "profile": {"business_type": "Kirana store", "employee_count": 2, "num_sites": 1, "city": "Delhi", "has_gstin": false, "requested_products": ["P99"]},
-   "expect_includes": ["P04"], "expect_excludes": {"P99": "UNKNOWN_PRODUCT"}}
+  {
+    "name": "01 kirana, no GSTIN, wants WhatsApp API (Lucknow, tier 2)",
+    "profile": {
+      "business_type": "Kirana store",
+      "employee_count": 2,
+      "num_sites": 1,
+      "city": "Lucknow",
+      "has_gstin": false,
+      "needs": [
+        "whatsapp_customers"
+      ]
+    },
+    "expect_includes": [
+      "P04",
+      "P07",
+      "P18"
+    ],
+    "expect_excludes": {
+      "P15": "GSTIN_REQUIRED"
+    }
+  },
+  {
+    "name": "02 tailor, 6 staff, Delhi, asks for Managed Firewall",
+    "profile": {
+      "business_type": "Tailoring shop",
+      "employee_count": 6,
+      "num_sites": 1,
+      "city": "Delhi",
+      "has_gstin": true,
+      "gstin_status": "Active",
+      "requested_products": [
+        "P21"
+      ]
+    },
+    "expect_includes": [
+      "P07"
+    ],
+    "expect_excludes": {
+      "P21": "MIN_EMPLOYEES"
+    }
+  },
+  {
+    "name": "03 salon, 3 staff, Jaipur, 'just cameras, I have a local ISP'",
+    "profile": {
+      "business_type": "Salon",
+      "employee_count": 3,
+      "num_sites": 1,
+      "city": "Jaipur",
+      "has_gstin": false,
+      "current_internet": "Local ISP",
+      "needs": [
+        "cctv"
+      ]
+    },
+    "expect_includes": [
+      "P01",
+      "P23"
+    ],
+    "expect_not_includes": [
+      "P04"
+    ]
+  },
+  {
+    "name": "04 clinic, 8 staff, Nagpur (tier 2), wants Fibre 1G",
+    "profile": {
+      "business_type": "Dental clinic",
+      "employee_count": 8,
+      "num_sites": 1,
+      "city": "Nagpur",
+      "has_gstin": true,
+      "gstin_status": "Active",
+      "requested_products": [
+        "P03"
+      ]
+    },
+    "expect_includes": [
+      "P02",
+      "P08"
+    ],
+    "expect_excludes": {
+      "P03": "TIER_NOT_AVAILABLE"
+    }
+  },
+  {
+    "name": "05 clinic, 4 staff, Mumbai, wants Fibre 1G",
+    "profile": {
+      "business_type": "Dental clinic",
+      "employee_count": 4,
+      "num_sites": 1,
+      "city": "Mumbai",
+      "has_gstin": true,
+      "gstin_status": "Active",
+      "requested_products": [
+        "P03"
+      ]
+    },
+    "expect_includes": [
+      "P02"
+    ],
+    "expect_excludes": {
+      "P03": "MIN_EMPLOYEES"
+    }
+  },
+  {
+    "name": "06 restaurant chain, 3 outlets, 25 staff, Bengaluru, GSTIN",
+    "profile": {
+      "business_type": "Restaurant chain",
+      "employee_count": 25,
+      "num_sites": 3,
+      "city": "Bengaluru",
+      "has_gstin": true,
+      "gstin_status": "Active",
+      "needs": [
+        "multi_branch",
+        "cctv"
+      ]
+    },
+    "expect_includes": [
+      "P02",
+      "P09",
+      "P10",
+      "P13",
+      "P23",
+      "P08"
+    ],
+    "expect_excludes": {}
+  },
+  {
+    "name": "07 same chain but no GST yet",
+    "profile": {
+      "business_type": "Restaurant chain",
+      "employee_count": 25,
+      "num_sites": 3,
+      "city": "Bengaluru",
+      "has_gstin": false,
+      "needs": [
+        "multi_branch",
+        "cctv"
+      ]
+    },
+    "expect_includes": [
+      "P02",
+      "P09",
+      "P23"
+    ],
+    "expect_excludes": {
+      "P10": "GSTIN_REQUIRED",
+      "P13": "GSTIN_REQUIRED"
+    }
+  },
+  {
+    "name": "08 auto-parts unit, 12 staff, Pune, machines + security",
+    "profile": {
+      "business_type": "Auto-parts unit",
+      "employee_count": 12,
+      "num_sites": 1,
+      "city": "Pune",
+      "has_gstin": true,
+      "gstin_status": "Active",
+      "needs": [
+        "machines",
+        "data_security"
+      ]
+    },
+    "expect_includes": [
+      "P05",
+      "P24",
+      "P21",
+      "P20",
+      "P08"
+    ],
+    "expect_excludes": {}
+  },
+  {
+    "name": "09 auto-parts unit, 8 staff, Pune, machines + security",
+    "profile": {
+      "business_type": "Auto-parts unit",
+      "employee_count": 8,
+      "num_sites": 1,
+      "city": "Pune",
+      "has_gstin": true,
+      "gstin_status": "Active",
+      "needs": [
+        "machines",
+        "data_security"
+      ]
+    },
+    "expect_includes": [
+      "P03",
+      "P20"
+    ],
+    "expect_excludes": {
+      "P24": "MIN_EMPLOYEES",
+      "P21": "MIN_EMPLOYEES"
+    }
+  },
+  {
+    "name": "10 textile unit, 30 staff, Surat (tier 2), asks for Leased Line 100",
+    "profile": {
+      "business_type": "Textile unit",
+      "employee_count": 30,
+      "num_sites": 1,
+      "city": "Surat",
+      "has_gstin": true,
+      "gstin_status": "Active",
+      "requested_products": [
+        "P06"
+      ]
+    },
+    "expect_includes": [
+      "P06",
+      "P08"
+    ],
+    "expect_not_includes": [
+      "P05"
+    ]
+  },
+  {
+    "name": "11 CA firm, 5 staff, Kolkata, wants cloud telephony",
+    "profile": {
+      "business_type": "CA firm",
+      "employee_count": 5,
+      "num_sites": 1,
+      "city": "Kolkata",
+      "has_gstin": true,
+      "gstin_status": "Active",
+      "requested_products": [
+        "P12"
+      ]
+    },
+    "expect_includes": [
+      "P02",
+      "P12"
+    ],
+    "expect_excludes": {}
+  },
+  {
+    "name": "12 CA firm, 2 staff, wants cloud telephony",
+    "profile": {
+      "business_type": "CA firm",
+      "employee_count": 2,
+      "num_sites": 1,
+      "city": "Kolkata",
+      "has_gstin": true,
+      "gstin_status": "Active",
+      "requested_products": [
+        "P12"
+      ]
+    },
+    "expect_includes": [
+      "P02"
+    ],
+    "expect_excludes": {
+      "P12": "MIN_EMPLOYEES"
+    }
+  },
+  {
+    "name": "13 coaching centre with a Cancelled GSTIN wants WhatsApp",
+    "profile": {
+      "business_type": "Coaching centre",
+      "employee_count": 4,
+      "num_sites": 1,
+      "city": "Delhi",
+      "has_gstin": true,
+      "gstin_status": "Cancelled",
+      "needs": [
+        "whatsapp_customers"
+      ]
+    },
+    "expect_includes": [
+      "P18"
+    ],
+    "expect_excludes": {
+      "P15": "GSTIN_NOT_ACTIVE"
+    }
+  },
+  {
+    "name": "17 owner only wants SIMs",
+    "profile": {
+      "business_type": "Stationery shop",
+      "employee_count": 3,
+      "num_sites": 1,
+      "city": "Patna",
+      "has_gstin": false,
+      "needs": [
+        "sim_only"
+      ]
+    },
+    "expect_includes": [
+      "P07"
+    ],
+    "expect_not_includes": [
+      "P01",
+      "P02",
+      "P04"
+    ]
+  },
+  {
+    "name": "18 micro shop wants failover (AirFiber cannot carry it)",
+    "profile": {
+      "business_type": "Pharmacy",
+      "employee_count": 2,
+      "num_sites": 1,
+      "city": "Jaipur",
+      "has_gstin": false,
+      "needs": [
+        "uptime"
+      ]
+    },
+    "expect_includes": [
+      "P01",
+      "P09"
+    ],
+    "expect_not_includes": [
+      "P04"
+    ]
+  },
+  {
+    "name": "19 owner asks AirFiber + Static IP",
+    "profile": {
+      "business_type": "Kirana store",
+      "employee_count": 2,
+      "num_sites": 1,
+      "city": "Indore",
+      "has_gstin": false,
+      "requested_products": [
+        "P04",
+        "P11"
+      ]
+    },
+    "expect_includes": [
+      "P01",
+      "P11"
+    ],
+    "expect_not_includes": [
+      "P04"
+    ]
+  },
+  {
+    "name": "20 factory with leased line wants Secure Wi-Fi",
+    "profile": {
+      "business_type": "Packaging unit",
+      "employee_count": 15,
+      "num_sites": 1,
+      "city": "Ahmedabad",
+      "has_gstin": true,
+      "gstin_status": "Active",
+      "requested_products": [
+        "P05",
+        "P22"
+      ]
+    },
+    "expect_includes": [
+      "P05",
+      "P22"
+    ],
+    "expect_excludes": {}
+  },
+  {
+    "name": "21 one-person pharmacy, no GSTIN, no Udyam, no stated needs",
+    "profile": {
+      "business_type": "Pharmacy",
+      "employee_count": 1,
+      "num_sites": 1,
+      "city": "Patna",
+      "has_gstin": false,
+      "has_udyam": false
+    },
+    "expect_includes": [
+      "P04",
+      "P07"
+    ],
+    "expect_not_includes": [
+      "P15",
+      "P14",
+      "P13"
+    ]
+  },
+  {
+    "name": "25 gym chain, 2 sites, 15 staff, Hyderabad (SD-WAN needs more sites)",
+    "profile": {
+      "business_type": "Gym chain",
+      "employee_count": 15,
+      "num_sites": 2,
+      "city": "Hyderabad",
+      "has_gstin": true,
+      "gstin_status": "Active",
+      "needs": [
+        "multi_branch",
+        "cctv"
+      ]
+    },
+    "expect_includes": [
+      "P02",
+      "P09",
+      "P13",
+      "P23"
+    ],
+    "expect_excludes": {
+      "P10": "MIN_SITES"
+    }
+  },
+  {
+    "name": "26 real estate agency, 7 staff, Ahmedabad, toll-free + SMS",
+    "profile": {
+      "business_type": "Real estate agency",
+      "employee_count": 7,
+      "num_sites": 1,
+      "city": "Ahmedabad",
+      "has_gstin": true,
+      "gstin_status": "Active",
+      "requested_products": [
+        "P13",
+        "P14"
+      ]
+    },
+    "expect_includes": [
+      "P13",
+      "P14"
+    ],
+    "expect_excludes": {}
+  },
+  {
+    "name": "27 same agency, GSTIN Suspended",
+    "profile": {
+      "business_type": "Real estate agency",
+      "employee_count": 7,
+      "num_sites": 1,
+      "city": "Ahmedabad",
+      "has_gstin": true,
+      "gstin_status": "Suspended",
+      "requested_products": [
+        "P13",
+        "P14"
+      ]
+    },
+    "expect_includes": [
+      "P02"
+    ],
+    "expect_excludes": {
+      "P13": "GSTIN_NOT_ACTIVE",
+      "P14": "GSTIN_NOT_ACTIVE"
+    }
+  },
+  {
+    "name": "30 has a competitor leased line, wants only email + security",
+    "profile": {
+      "business_type": "Law office",
+      "employee_count": 12,
+      "num_sites": 1,
+      "city": "Chennai",
+      "has_gstin": true,
+      "gstin_status": "Active",
+      "current_internet": "Leased line",
+      "current_provider": "Competitor A",
+      "needs": [
+        "services_only",
+        "email_docs",
+        "data_security"
+      ]
+    },
+    "expect_includes": [
+      "P16",
+      "P20",
+      "P17"
+    ],
+    "expect_not_includes": [
+      "P01",
+      "P02",
+      "P03",
+      "P04",
+      "P05",
+      "P06"
+    ],
+    "expect_excludes": {
+      "P21": "NEEDS_BASE_LINE"
+    }
+  },
+  {
+    "name": "31 unknown city defaults to tier 2 (Fibre 1G not offered)",
+    "profile": {
+      "business_type": "Architect studio",
+      "employee_count": 9,
+      "num_sites": 1,
+      "city": "Shimla",
+      "has_gstin": true,
+      "gstin_status": "Active",
+      "requested_products": [
+        "P03"
+      ]
+    },
+    "expect_includes": [
+      "P02"
+    ],
+    "expect_excludes": {
+      "P03": "TIER_NOT_AVAILABLE"
+    }
+  },
+  {
+    "name": "32 product that does not exist",
+    "profile": {
+      "business_type": "Kirana store",
+      "employee_count": 2,
+      "num_sites": 1,
+      "city": "Delhi",
+      "has_gstin": false,
+      "requested_products": [
+        "P99"
+      ]
+    },
+    "expect_includes": [
+      "P04"
+    ],
+    "expect_excludes": {
+      "P99": "UNKNOWN_PRODUCT"
+    }
+  },
+  {
+    "name": "33 two-site chain, 12 staff, GSTIN, asks for SD-WAN (needs 3 sites)",
+    "profile": {
+      "business_type": "Pharmacy chain",
+      "employee_count": 12,
+      "num_sites": 2,
+      "city": "Hyderabad",
+      "has_gstin": true,
+      "needs": [
+        "multi_branch"
+      ],
+      "requested_products": [
+        "P10"
+      ]
+    },
+    "expect_includes": [
+      "P02",
+      "P09",
+      "P13"
+    ],
+    "expect_excludes": {
+      "P10": "MIN_SITES"
+    },
+    "expect_not_includes": [
+      "P10"
+    ]
+  },
+  {
+    "name": "34 staff count unknown, asks for Managed Firewall (conservative default = 1 person)",
+    "profile": {
+      "business_type": "CA firm",
+      "employee_count": null,
+      "num_sites": 1,
+      "city": "Pune",
+      "has_gstin": true,
+      "requested_products": [
+        "P21"
+      ]
+    },
+    "expect_excludes": {
+      "P21": "MIN_EMPLOYEES"
+    },
+    "expect_not_includes": [
+      "P21"
+    ]
+  },
+  {
+    "name": "35 city unknown, 6 staff, asks for Fibre 1G (unknown city = tier 2)",
+    "profile": {
+      "business_type": "Law office",
+      "employee_count": 6,
+      "num_sites": 1,
+      "city": null,
+      "has_gstin": true,
+      "requested_products": [
+        "P03"
+      ]
+    },
+    "expect_includes": [
+      "P02"
+    ],
+    "expect_excludes": {
+      "P03": "TIER_NOT_AVAILABLE"
+    }
+  },
+  {
+    "name": "36 GST status unknown (never asked) wants toll-free number",
+    "profile": {
+      "business_type": "Real estate agency",
+      "employee_count": 7,
+      "num_sites": 1,
+      "city": "Ahmedabad",
+      "has_gstin": null,
+      "requested_products": [
+        "P13"
+      ]
+    },
+    "expect_excludes": {
+      "P13": "GSTIN_REQUIRED"
+    }
+  },
+  {
+    "name": "37 delivery vehicles, no GSTIN: fleet tracker is GST-free",
+    "profile": {
+      "business_type": "Bakery",
+      "employee_count": 4,
+      "num_sites": 1,
+      "city": "Jaipur",
+      "has_gstin": false,
+      "needs": [
+        "vehicles"
+      ]
+    },
+    "expect_includes": [
+      "P25",
+      "P04",
+      "P07"
+    ],
+    "expect_not_includes": [
+      "P15",
+      "P13"
+    ]
+  },
+  {
+    "name": "38 9-staff unit asks for Machine Monitoring IoT (needs 10)",
+    "profile": {
+      "business_type": "Packaging unit",
+      "employee_count": 9,
+      "num_sites": 1,
+      "city": "Surat",
+      "has_gstin": true,
+      "requested_products": [
+        "P24"
+      ]
+    },
+    "expect_excludes": {
+      "P24": "MIN_EMPLOYEES"
+    },
+    "expect_includes": [
+      "P02"
+    ],
+    "expect_not_includes": [
+      "P24",
+      "P05"
+    ]
+  }
 ]

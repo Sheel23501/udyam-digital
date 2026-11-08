@@ -1,0 +1,169 @@
+[
+  {
+    "name": "T01 kirana, no GST, wants WhatsApp Business (English)",
+    "turns": [
+      "I run a kirana store in Lucknow",
+      "2 people including me, just the one shop",
+      "No GST registration",
+      "Customers keep messaging me on WhatsApp for orders. I want a proper WhatsApp business account for the shop."
+    ],
+    "expect_excludes": {"P15": "GSTIN_REQUIRED"},
+    "expect_includes": ["P18", "P07"],
+    "expect_includes_any": [["P01", "P04"]],
+    "expect_not_includes": ["P15"],
+    "demo": true
+  },
+  {
+    "name": "T02 tailor, 6 staff, Delhi, asks for Managed Firewall",
+    "turns": [
+      "Tailoring shop in Delhi, 6 people work here, one shop, yes we have GST",
+      "I want a managed firewall to keep our computers safe"
+    ],
+    "expect_excludes": {"P21": "MIN_EMPLOYEES"},
+    "expect_includes": ["P20"],
+    "expect_not_includes": ["P21"]
+  },
+  {
+    "name": "T03 salon with its own ISP wants only cameras, then accepts a line",
+    "turns": [
+      "I have a salon in Jaipur, 3 staff, one shop, no GST. I already have internet from a local ISP, I just want CCTV cameras.",
+      "Ok, add your line then."
+    ],
+    "expect_includes": ["P23"],
+    "expect_includes_any": [["P01", "P02", "P04"]]
+  },
+  {
+    "name": "T04 Hindi: sari shop, 2 shops, card machine drops, wants cameras",
+    "turns": [
+      "मेरी साड़ी की दुकान है दिल्ली में",
+      "पाँच लोग काम करते हैं, दो दुकानें हैं",
+      "हाँ GST है",
+      "कार्ड मशीन बार-बार बंद हो जाती है और दुकान पर कैमरा भी चाहिए"
+    ],
+    "expect_includes": ["P09", "P19", "P23"],
+    "expect_includes_any": [["P01", "P02", "P03"]],
+    "expect_not_includes": ["P04"],
+    "expect_profile": {"employee_count": 5, "num_sites": 2, "city": "Delhi"},
+    "expect_language": "hi",
+    "demo": true
+  },
+  {
+    "name": "T05 Hinglish: 'paanch log' dental clinic in Mumbai wants 1 Gbps fibre",
+    "turns": [
+      "Mumbai me meri dental clinic hai",
+      "paanch log hain, ek hi clinic hai, GST bhi hai",
+      "Mujhe Biz Fibre 1G chahiye, fast internet"
+    ],
+    "expect_includes": ["P03"],
+    "expect_profile": {"employee_count": 5, "num_sites": 1, "city": "Mumbai"},
+    "expect_language": "hinglish",
+    "demo": true
+  },
+  {
+    "name": "T06 clinic, 8 staff, Nagpur (tier 2), wants Biz Fibre 1G",
+    "turns": [
+      "We are a physiotherapy clinic in Nagpur with 8 staff, one clinic, GST registered.",
+      "We want the 1 Gbps Biz Fibre plan."
+    ],
+    "expect_excludes": {"P03": "TIER_NOT_AVAILABLE"},
+    "expect_includes": ["P02"]
+  },
+  {
+    "name": "T07 restaurant chain, 3 outlets, 25 staff, Bengaluru, no GST yet",
+    "turns": [
+      "Restaurant chain, 3 outlets in Bengaluru, about 25 staff in total",
+      "We don't have GST yet, applying next month",
+      "We want all branches on one network with cameras, and the billing should never go down"
+    ],
+    "expect_excludes": {"P10": "GSTIN_REQUIRED", "P13": "GSTIN_REQUIRED"},
+    "expect_includes": ["P23", "P09"],
+    "expect_qty": {"P09": 3},
+    "expect_profile": {"num_sites": 3, "has_gstin": false}
+  },
+  {
+    "name": "T08 owner wants only SIM cards",
+    "turns": [
+      "I just want 4 business SIM cards for my staff, nothing else. Stationery shop in Patna, 4 people, one shop, no GST."
+    ],
+    "expect_includes_any": [["P07", "P08"]],
+    "expect_not_includes": ["P01", "P02", "P03", "P04", "P05", "P06", "P19"]
+  },
+  {
+    "name": "T09 micro shop wants AirFiber plus failover (AirFiber cannot carry it)",
+    "turns": [
+      "Mobile repair shop in Indore, 2 staff, one shop, no GST",
+      "I want the 5G AirFiber because fibre takes too long, and a backup so the internet never goes down"
+    ],
+    "expect_includes": ["P09"],
+    "expect_includes_any": [["P01", "P02"]],
+    "expect_not_includes": ["P04"]
+  },
+  {
+    "name": "T10 owner adds a second branch after the quote",
+    "turns": [
+      "Pharmacy in Noida, 3 staff, one shop, GST registered, I want CCTV cameras",
+      "Oh wait, I also have another branch in Ghaziabad"
+    ],
+    "expect_includes": ["P23"],
+    "expect_qty": {"P23": 4},
+    "expect_profile": {"num_sites": 2}
+  },
+  {
+    "name": "T11 law office moves from Mumbai to Nashik mid-chat",
+    "turns": [
+      "Law office in Mumbai, 6 staff, one office, GST active. We need the 1 Gbps fibre.",
+      "Sorry, the office is actually in Nashik, not Mumbai."
+    ],
+    "expect_excludes": {"P03": "TIER_NOT_AVAILABLE"},
+    "expect_includes": ["P02"],
+    "expect_not_includes": ["P03"],
+    "expect_profile": {"city": "Nashik"}
+  },
+  {
+    "name": "T12 owner asks for a product we do not sell",
+    "turns": [
+      "Bakery in Surat, 5 staff, one shop, GST registered",
+      "Do you have Starlink? I want satellite internet."
+    ],
+    "expect_includes_any": [["P01", "P02", "P04"]],
+    "expect_not_includes": ["P03"]
+  },
+  {
+    "name": "T13 owner asks the price before saying anything",
+    "turns": [
+      "How much does it cost?",
+      "Coaching centre in Kolkata, 12 teachers, one centre, GST registered",
+      "Just reliable internet for the classrooms"
+    ],
+    "expect_includes": ["P02"],
+    "expect_profile": {"employee_count": 12, "city": "Kolkata"}
+  },
+  {
+    "name": "T14 auto-parts unit, 12 staff, Pune, machines + security",
+    "turns": [
+      "Auto-parts manufacturing unit in Pune, 12 staff, one factory, GST registered. I want to monitor machine uptime and secure the network."
+    ],
+    "expect_includes": ["P24", "P21"],
+    "expect_includes_any": [["P05", "P03", "P02"]]
+  },
+  {
+    "name": "T15 coaching centre gives a cancelled GSTIN, wants toll-free + WhatsApp",
+    "turns": [
+      "Coaching centre in Kochi, 6 staff, one centre. Our GSTIN is 32HJJXE5083Y1ZR.",
+      "We want a toll-free number and the WhatsApp Business API."
+    ],
+    "expect_excludes": {"P13": "GSTIN_NOT_ACTIVE", "P15": "GSTIN_NOT_ACTIVE"},
+    "expect_includes": ["P18"],
+    "expect_profile": {"gstin": "32HJJXE5083Y1ZR", "gstin_status": "Cancelled"}
+  },
+  {
+    "name": "T16 vague owner who cannot answer: advisor must still quote with stated assumptions",
+    "turns": [
+      "I have a small shop, I need internet",
+      "Not sure about all that, I don't know. Just tell me something.",
+      "I told you I don't know these things. Just give me a rough idea."
+    ],
+    "expect_includes_any": [["P01", "P02", "P04"]],
+    "expect_not_includes": ["P03", "P05", "P06", "P21"]
+  }
+]
