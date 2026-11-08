@@ -191,7 +191,7 @@ def slide_title(prs, bg):
     text(s, 0.75, 4.35, 5.4, 0.85, [
         [("Live prototype  ", {"bold": True, "color": WHITE}), ("udyam-digital-isyfatadrab4adtbqddzwp.streamlit.app", {"color": RGBColor(0xF3, 0xF4, 0xF6)})],
         [("Code  ", {"bold": True, "color": WHITE}), ("github.com/Sheel23501/udyam-digital", {"color": RGBColor(0xF3, 0xF4, 0xF6)})],
-        [("Sheel Gautam · IIIT Delhi · November 2026", {"color": RGBColor(0xD1, 0xD5, 0xDB)})],
+        [("Team: Sheel Gautam (IIIT Delhi) and Vikas Meena · November 2026", {"color": RGBColor(0xD1, 0xD5, 0xDB)})],
     ], size=10, line=1.3)
     return s
 
@@ -277,36 +277,37 @@ def slide_bundles(prs, bg):
     return s
 
 
-def slide_journey(prs, bg):
+def architecture_crop() -> Path:
+    """The slide has its own title, so drop the title band of the diagram and keep the boxes at full resolution."""
+    from PIL import Image
+    im = Image.open(ROOT / "docs" / "architecture.png").convert("RGB")
+    out = WORK / "architecture_crop.png"
+    im.crop((0, int(im.height * 0.115), im.width, im.height)).save(out)
+    return out
+
+
+def slide_architecture(prs, bg):
     s = new_slide(prs, bg)
-    title(s, "The journey: six steps on a phone, three rules underneath", "Hindi, English or Hinglish, detected from what the owner types. Works even when the model is down: the engine still quotes.")
-    steps = [("1", "Enter", "Link, QR or WhatsApp.\nMobile number + one-time code."),
-             ("2", "Advisor", "4 to 6 questions in the owner's language. Facts recorded, never products."),
-             ("3", "Quote", "One monthly number. Toggle items; every change re-checked by the rules."),
-             ("4", "Consent", "Itemised DPDP notice in their language before any document."),
-             ("5", "Smart KYC", "Four photos. 12 checks against GST and Udyam registries in seconds."),
-             ("6", "Tracker", "Dated stages, notifications. Zero status calls.")]
-    x = 0.5
-    for num, head, body in steps:
-        card(s, x, 1.78, 1.42, 1.2)
-        rect(s, x + 0.1, 1.88, 0.34, 0.34, fill=RED, shape=MSO_SHAPE.OVAL)
-        text(s, x + 0.1, 1.9, 0.34, 0.3, num, size=11, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        text(s, x + 0.5, 1.9, 0.9, 0.3, head, size=11, bold=True)
-        text(s, x + 0.1, 2.28, 1.25, 0.8, body, size=7.8, color=INK2, line=1.1)
-        if num != "6":
-            text(s, x + 1.42, 2.2, 0.1, 0.4, "›", size=16, color=MUTED, align=PP_ALIGN.CENTER)
-        x += 1.52
-    rules = [("Rules decide, the LLM narrates", "A deterministic engine over the catalogue decides eligibility, dependencies and price. The model only asks questions and explains. The card is drawn from engine output, never from prose. 30 scenario fixtures and a 900-profile invariant test keep it honest."),
-             ("One number, instantly", "No PDF, no call-back: the quote appears in the chat and re-validates on every toggle. Owners who heard 'quote too complex' or 'quote took too long' (385 drops) get a price in minutes."),
-             ("No status calls", "Every order has dated stages and proactive notifications. Customers who made one status call churned at 6%; five calls, 28%. The tracker exists to make that number zero.")]
-    x = 0.5
-    for head, body in rules:
-        card(s, x, 3.15, 2.95, 1.9, fill=TINT2, line_color=TINT2)
-        rect(s, x, 3.15, 0.07, 1.9, fill=RED)
-        text(s, x + 0.17, 3.25, 2.7, 0.3, head, size=11.5, bold=True)
-        text(s, x + 0.17, 3.6, 2.7, 1.4, body, size=9, color=INK2, line=1.2)
-        x += 3.03
-    source(s, "Architecture diagram and data flows: docs/architecture.png (submitted separately). Prototype: FastAPI + rules engine + Streamlit, LLM via an OpenAI-compatible provider chain.")
+    title(s, "How it is built: rules decide, the LLM narrates")
+    # left: the six steps the owner sees
+    steps = [("Enter", "link, QR or WhatsApp; mobile + one-time code"), ("Advisor", "4 to 6 questions in Hindi or English"), ("Quote", "one monthly number, re-checked on every toggle"),
+             ("Consent", "itemised DPDP notice before any document"), ("Smart KYC", "four photos, 12 checks in seconds"), ("Tracker", "dated stages, zero status calls")]
+    y = 1.5
+    for i, (head, body) in enumerate(steps, 1):
+        rect(s, 0.5, y + 0.02, 0.24, 0.24, fill=RED, shape=MSO_SHAPE.OVAL)
+        text(s, 0.5, y + 0.03, 0.24, 0.22, str(i), size=8, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        text(s, 0.8, y - 0.02, 1.5, 0.6, [[(head, {"bold": True, "size": 9.5})], [(body, {"size": 7.6, "color": INK2})]], line=1.0)
+        y += 0.6
+    # right: the diagram at full size
+    img = architecture_crop()
+    from PIL import Image
+    w_px, h_px = Image.open(img).size
+    h_in = 3.58
+    w_in = h_in * w_px / h_px
+    x0 = 9.6 - w_in
+    card(s, x0 - 0.04, 1.43, w_in + 0.08, h_in + 0.06, fill=RGBColor(0xFC, 0xFC, 0xFA), line_color=LINE)
+    s.shapes.add_picture(str(img), Inches(x0), Inches(1.46), Inches(w_in), Inches(h_in))
+    source(s, "Consent gates every document; the engine still quotes if the model is down. Full-resolution diagram: docs/architecture.png (submitted separately).")
     return s
 
 
@@ -437,7 +438,7 @@ def main() -> int:
     prs = Presentation(str(TEMPLATE))
     clear_slides(prs)
     slide_title(prs, title_bg)
-    for fn in (slide_leak, slide_segments, slide_bundles, slide_journey, slide_kyc, slide_field, slide_rollout, slide_metrics, slide_risks):
+    for fn in (slide_leak, slide_segments, slide_bundles, slide_architecture, slide_kyc, slide_field, slide_rollout, slide_metrics, slide_risks):
         fn(prs, body_bg)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     prs.save(str(OUT))
