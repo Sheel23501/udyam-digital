@@ -29,7 +29,15 @@ if api.health() is None:
 st.title("Unclosed leads")
 st.caption("Live sessions that stopped before an order, plus a scored sample of historical drops. The score only prioritises outreach; it never denies service.")
 
-tab_queue, tab_detail, tab_audit, tab_admin = st.tabs(["Queue", "Lead detail", "Audit log", "Privacy admin"])
+tab_queue, tab_detail, tab_audit, tab_admin, tab_system = st.tabs(["Queue", "Lead detail", "Audit log", "Privacy admin", "System"])
+
+with tab_system:
+    st.markdown("**Deployment status** — what this running app can see. Key *names* only, never values.")
+    st.json(api.health() or {"health": "unreachable"})
+    st.json(api.diagnostics())
+    st.caption("`advisor_providers` lists the LLM providers with a key. Empty list = no key reached the backend: check the "
+               "Secrets in the app settings. Replies marked 'briefly unavailable' with providers present = quota exhausted "
+               "(Groq free tier: 200k tokens/day); the quote is still computed by the rules engine.")
 
 with tab_queue:
     c1, c2, c3 = st.columns(3)

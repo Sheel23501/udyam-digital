@@ -19,6 +19,11 @@ def header(step_index: int | None = None, total: int = 6) -> None:
         st.markdown(f"<div class='steps'>{dots}</div>", unsafe_allow_html=True)
 
 
+def md_lines(text: str) -> str:
+    """Keep the advisor's line breaks: Markdown collapses single newlines, so end each line with two spaces."""
+    return "  \n".join(line.rstrip() for line in (text or "").split("\n"))
+
+
 def stream_text(text: str, delay: float | None = None) -> Iterator[str]:
     """Word-by-word generator for st.write_stream (the API returns the whole reply; this just paces it)."""
     delay = float(os.getenv("UI_STREAM_DELAY_S", "0.015")) if delay is None else delay

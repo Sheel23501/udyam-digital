@@ -36,11 +36,6 @@ def _setting(name: str, default: str | None = None) -> str | None:
     return os.getenv(name, default)
 
 
-BASE = (_setting("BACKEND_URL", "http://localhost:8000") or "").rstrip("/")
-MODE_SETTING = (_setting("API_MODE", "auto") or "auto").lower()
-TIMEOUT = float(_setting("API_TIMEOUT_S", "90") or 90)
-
-
 def _export_secrets_to_env() -> None:
     """Streamlit Cloud secrets -> environment, so the in-process backend (which reads os.getenv) sees the API keys.
     Never overrides a variable that is already set."""
@@ -50,6 +45,12 @@ def _export_secrets_to_env() -> None:
                 os.environ[k] = str(v)
     except Exception:  # noqa: BLE001 — no secrets file locally
         pass
+
+
+_export_secrets_to_env()
+BASE = (_setting("BACKEND_URL", "http://localhost:8000") or "").rstrip("/")
+MODE_SETTING = (_setting("API_MODE", "auto") or "auto").lower()
+TIMEOUT = float(_setting("API_TIMEOUT_S", "90") or 90)
 
 
 @st.cache_resource(show_spinner=False)
@@ -86,9 +87,19 @@ def mode() -> str:
             return "http"
 
 
+KEY_NAMES = ("GROQ_API_KEY", "GEMINI_API_KEY", "MISTRAL_API_KEY", "CEREBRAS_API_KEY", "OPENROUTER_API_KEY")
+
+
 def diagnostics() -> dict:
-    """What the page shows under the 'starting up' notice so a broken deploy explains itself."""
-    info = {"mode_setting": MODE_SETTING, "mode": mode(), "backend_url": BASE, "python": sys.version.split()[0]}
+    """What the page shows under the 'starting up' notice (and in the back-office System tab). Key names only."""
+    secret_names: list[str] = []
+    try:
+        secret_names = sorted(k for k in st.secrets.keys() if isinstance(st.secrets[k], (str, int, float, bool)))
+    except Exception:  # noqa: BLE001
+        pass
+    info = {"mode_setting": MODE_SETTING, "mode": mode(), "backend_url": BASE, "python": sys.version.split()[0],
+            "secrets_present": secret_names,
+            "env_keys_present": [k for k in KEY_NAMES if os.getenv(k)]}
     if mode() == "inprocess" or MODE_SETTING == "inprocess":
         try:
             _inprocess_client()

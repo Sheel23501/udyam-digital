@@ -19,7 +19,7 @@ def _send(text: str) -> None:
             cards.api_error(e)
             ss.transcript.pop()
             return
-        st.write_stream(cards.stream_text(r["text"]))
+        st.write_stream(cards.stream_text(cards.md_lines(r["text"])))
     ss.transcript.append({"role": "assistant", "text": r["text"], "provider": r.get("provider")})
     ss.profile = r["profile"]
     ss.missing = r.get("missing", [])
@@ -37,7 +37,7 @@ def render() -> None:
     cards.header(1)
     for m in ss.transcript:
         with st.chat_message(m["role"]):
-            st.markdown(m["text"])
+            st.markdown(cards.md_lines(m["text"]) if m["role"] == "assistant" else m["text"])
             if m.get("provider") == "offline":
                 st.caption(t("offline_note"))
     if ss.get("recommendation"):
