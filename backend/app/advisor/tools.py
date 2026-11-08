@@ -130,6 +130,8 @@ def compute(st: State) -> dict:
     if st.assumed:
         out["assumed"] = st.assumed
     st.allowed_numbers |= _numbers(out)
+    if "alternative_with_accel_line" in out:                  # names in the offered alternative may be mentioned
+        st.allowed_names |= {b["name"] for b in out["alternative_with_accel_line"]["bundle"]}
     return out
 
 
@@ -195,6 +197,10 @@ def _update_profile(args: dict, st: State) -> dict:
         upd["city_tier"] = None                               # re-derived by the engine from the new city
     if "has_gstin" in args and args["has_gstin"] not in (None, ""):
         b = parse_bool(args["has_gstin"])
+        if b is False and st.profile.gstin and st.profile.gstin_status in ("Cancelled", "Suspended") and not args.get("gstin"):
+            b = None                                          # a cancelled GSTIN is still a registration: keep it so the
+            extra["kept_gstin"] = ("the GSTIN is on record but " + st.profile.gstin_status.lower() +   # engine says NOT_ACTIVE
+                                   "; has_gstin stays true and GST-only products stay excluded")
         if b is not None:
             upd["has_gstin"] = b
             if not b:
@@ -208,6 +214,9 @@ def _update_profile(args: dict, st: State) -> dict:
             upd["has_gstin"] = True
             upd["gstin_status"] = row["status"]
             extra["gstin_registry"] = {"found": True, "status": row["status"], "legal_name": row["legal_name"], "state": row["state"]}
+            if row["status"] != "Active":
+                extra["gstin_registry"]["note"] = ("the business IS registered but the GSTIN is not active: keep has_gstin true; "
+                                                   "GST-only products are excluded as not active; it is re-checked at KYC")
         else:
             upd["gstin_status"] = None
             extra["gstin_registry"] = {"found": False, "note": "not in the GST registry; it will be verified at KYC"}

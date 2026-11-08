@@ -81,7 +81,9 @@ def _guard(text: str, st: State) -> str:
         return text
     cat = catalogue()
     low = text.lower()
-    allowed = {cat[i.product_id].name.lower() for i in st.recommendation.items}
+    allowed = {cat[i.product_id].name.lower() for i in st.recommendation.items} | {n.lower() for n in st.allowed_names}
+    described = " ".join(cat[i.product_id].description.lower() for i in st.recommendation.items if i.product_id in cat)
+    allowed |= {p.name.lower() for p in cat.values() if p.name.lower() in described}   # "static IP optional" in Biz Fibre 300
     mentioned_excluded = {cat[e.product_id].name.lower() for e in st.recommendation.excluded if e.product_id in cat}
     stray = [p.name for p in cat.values() if p.name.lower() in low and p.name.lower() not in allowed | mentioned_excluded]
     r = st.recommendation
@@ -104,6 +106,27 @@ def _guard(text: str, st: State) -> str:
             st.language, "\n\n_(Note: only the items on the card are included in your quote.)_")
         return text + note
     return text
+
+
+def _certain_facts(st: State, text: str) -> dict:
+    """What the owner stated unambiguously in this message and the profile does not have yet: explicit product names,
+    named needs (negation-aware), and missing basics (known city, dataset business type, counts, GST yes/no).
+    Fills gaps only; never overrides a value already recorded, so corrections stay with the model."""
+    out: dict = {}
+    named = [p for p in products_named_in(text) if p not in st.profile.requested_products]
+    if named:
+        out["requested_products"] = named
+    facts = read_facts(text, None, city_tiers(), list(business_type_segments()), strict=True)
+    for k in ("business_type", "employee_count", "num_sites", "city", "has_gstin"):
+        if k in facts and getattr(st.profile, k) is None:
+            out[k] = facts[k]
+    known = {n.value if hasattr(n, "value") else n for n in st.profile.needs}
+    new_needs = [n for n in facts.get("needs", []) if n not in known]
+    if new_needs:
+        out["needs"] = new_needs
+    if facts.get("gstin") and not st.profile.gstin:
+        out["gstin"] = facts["gstin"]
+    return out
 
 
 def _inject(st: State, name: str, args: dict) -> dict:
@@ -173,9 +196,13 @@ def _loop(st: State, max_wait_s: float | None) -> str:
         tool_calls = list(msg.tool_calls or [])
         entry: dict = {"role": "assistant", "content": content or None}
         if tool_calls:
-            entry["tool_calls"] = [{"id": tc.id, "type": "function",
-                                    "function": {"name": tc.function.name, "arguments": tc.function.arguments or "{}"}}
-                                   for tc in tool_calls]
+            entry["tool_calls"] = []
+            for tc in tool_calls:
+                call = {"id": tc.id, "type": "function", "function": {"name": tc.function.name, "arguments": tc.function.arguments or "{}"}}
+                extra = (getattr(tc, "model_extra", None) or {}).get("extra_content")
+                if extra:                                     # Gemini 3 thought signature: must be sent back next call
+                    call["extra_content"] = extra
+                entry["tool_calls"].append(call)
         st.messages.append(entry)
         if not tool_calls:
             break
@@ -263,9 +290,9 @@ def step(st: State, user_text: str, *, use_cache: bool = True, max_wait_s: float
     st.set_language(detect_language(user_text, st.language))
     st.user_turns.append(user_text)
     st.messages.append({"role": "user", "content": user_text})
-    named = [p for p in products_named_in(user_text) if p not in st.profile.requested_products]
-    if named:                                                 # an explicit product ask is never lost to a forgetful model
-        _inject(st, "update_profile", {"requested_products": named})
+    fill = _certain_facts(st, user_text)
+    if fill:                                                  # facts stated plainly are never lost to a forgetful model
+        _inject(st, "update_profile", fill)
 
     if os.getenv("ADVISOR_OFFLINE", "").lower() in ("1", "true", "yes"):
         hit = cache.get(st.user_turns, st.language) if use_cache else None

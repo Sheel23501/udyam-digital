@@ -1,0 +1,98 @@
+{
+ "reply": "How many people work at your store, including yourself?",
+ "state": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "I run a kirana store in Lucknow"
+   },
+   {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "auto_2_update_profile",
+      "type": "function",
+      "function": {
+       "name": "update_profile",
+       "arguments": "{\"business_type\": \"kirana store\", \"city\": \"Lucknow\"}"
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "auto_2_update_profile",
+    "content": "{\"ok\": true, \"profile\": {\"business_type\": \"kirana store\", \"city\": \"Lucknow\"}, \"still_needed\": [\"employee_count\", \"num_sites\", \"has_gstin\", \"needs\"]}"
+   },
+   {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "call_3082617396968366209",
+      "type": "function",
+      "function": {
+       "name": "update_profile",
+       "arguments": "{\"city\":\"Lucknow\"}"
+      },
+      "extra_content": {
+       "google": {
+        "thought_signature": "EmAKXgFpFH0TXm458dDTa+A0fSngtMbQOho5+27UfRL5CyeXLrv2x8LC3OXrD4qKtP745fWayM9lQPnnKQTn/cKfonLwUQMq1Xe2r5vuITE1vNvhksXpKGgAZ7FNqX/n+XM="
+       }
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_3082617396968366209",
+    "content": "{\"ok\": true, \"profile\": {\"business_type\": \"kirana store\", \"city\": \"Lucknow\"}, \"still_needed\": [\"employee_count\", \"num_sites\", \"has_gstin\", \"needs\"]}"
+   },
+   {
+    "role": "assistant",
+    "content": "How many people work at your store, including yourself?"
+   }
+  ],
+  "profile": {
+   "business_type": "kirana store",
+   "segment": null,
+   "employee_count": null,
+   "num_sites": null,
+   "city": "Lucknow",
+   "city_tier": null,
+   "has_gstin": null,
+   "gstin": null,
+   "gstin_status": null,
+   "has_udyam": null,
+   "current_internet": null,
+   "current_provider": null,
+   "monthly_spend": null,
+   "needs": [],
+   "requested_products": [],
+   "language": "en"
+  },
+  "recommendation": null,
+  "language": "en",
+  "provider": "gemini",
+  "needs_known": false,
+  "ready_turns": 0,
+  "pending": null,
+  "unsure_turns": 0,
+  "allowed_numbers": [],
+  "allowed_names": [],
+  "line_for_addons": false,
+  "quantities": {},
+  "assumed": {},
+  "user_turns": [
+   "I run a kirana store in Lucknow"
+  ],
+  "usage": {
+   "calls": 2,
+   "prompt_tokens": 4519,
+   "completion_tokens": 28,
+   "auto_calls": 1
+  },
+  "warnings": []
+ }
+}

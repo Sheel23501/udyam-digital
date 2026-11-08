@@ -15,6 +15,7 @@ class State:
         self.pending: str | None = None           # field the deterministic fallback last asked about
         self.ready_turns = 0                    # owner turns that ended with all five facts known but no quote yet
         self.allowed_numbers: set[int] = set()    # every figure the engine has handed the model (guard whitelist)
+        self.allowed_names: set[str] = set()      # product names the engine offered (e.g. in an add-a-line alternative)
         self.line_for_addons = False              # owner agreed to an Accel line for add-ons on a services-only ask
         self.quantities: dict[str, int] = {}      # owner-confirmed quantity overrides, e.g. {"P23": 50}
         self.assumed: dict = {}                   # defaults used when the owner could not answer
@@ -35,6 +36,7 @@ class State:
             "pending": self.pending,
             "unsure_turns": self.unsure_turns,
             "allowed_numbers": sorted(self.allowed_numbers),
+            "allowed_names": sorted(self.allowed_names),
             "line_for_addons": self.line_for_addons,
             "quantities": self.quantities,
             "assumed": self.assumed,
@@ -60,6 +62,7 @@ class State:
         self.pending = d.get("pending")
         self.unsure_turns = int(d.get("unsure_turns", 0))
         self.allowed_numbers = set(d.get("allowed_numbers", []))
+        self.allowed_names = set(d.get("allowed_names", []))
         self.line_for_addons = bool(d.get("line_for_addons", False))
         self.quantities = dict(d.get("quantities", {}))
         self.assumed = dict(d.get("assumed", {}))

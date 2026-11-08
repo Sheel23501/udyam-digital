@@ -270,10 +270,12 @@ def test_step_runs_tools_then_answers(monkeypatch, tmp_path):
     assert reply.startswith("Here is your plan")
     assert st.recommendation is not None and st.provider == "fake" and st.usage["calls"] == 2
     roles = [m["role"] for m in st.messages]
-    assert roles == ["system", "user", "assistant", "tool", "tool", "assistant"]
+    # system, user, [server: certain facts from the message -> assistant+tool], model: 2 tool calls -> 2 tool results, reply
+    assert roles == ["system", "user", "assistant", "tool", "assistant", "tool", "tool", "assistant"]
+    assert st.messages[2]["tool_calls"][0]["id"].startswith("auto_")
     tool_payloads = [json.loads(m["content"]) for m in st.messages if m["role"] == "tool"]
-    assert tool_payloads[0]["ok"] and "bundle" in tool_payloads[1]
-    assert st.messages[2]["tool_calls"][0]["function"]["name"] == "update_profile"
+    assert tool_payloads[0]["ok"] and tool_payloads[1]["ok"] and "bundle" in tool_payloads[2]
+    assert st.messages[4]["tool_calls"][0]["function"]["name"] == "update_profile"
     assert cache.get(st.user_turns, st.language)["reply"] == reply       # cached for the demo fallback
 
 
@@ -527,7 +529,8 @@ def test_stall_with_need_known_is_quoted_in_the_same_turn(monkeypatch, tmp_path)
     reply = chat.step(st, "Physio clinic in Nagpur, 8 staff, one clinic, GST, internet must never go down", use_cache=False)
     assert st.recommendation is not None and reply.startswith("Biz Fibre 300")
     assert not any(m.get("content") == "Anything else you need?" for m in st.messages)   # stalled question dropped
-    assert st.usage["auto_calls"] == 1
+    injected = [tc["function"]["name"] for m in st.messages for tc in (m.get("tool_calls") or []) if tc["id"].startswith("auto_")]
+    assert injected == ["update_profile", "get_recommendation"]       # certain facts first, then the forced quote
 
 
 def test_needs_question_gets_exactly_one_turn(monkeypatch, tmp_path):
@@ -552,7 +555,8 @@ def test_no_auto_quote_while_facts_are_missing(monkeypatch, tmp_path):
     monkeypatch.setattr(chat, "chat_completion", fake)
     st = State()
     chat.step(st, "I run a salon", use_cache=False)
-    assert st.recommendation is None and st.ready_turns == 0 and "auto_calls" not in st.usage
+    injected = [tc["function"]["name"] for m in st.messages for tc in (m.get("tool_calls") or []) if tc["id"].startswith("auto_")]
+    assert st.recommendation is None and st.ready_turns == 0 and "get_recommendation" not in injected
 
 
 def test_alternative_prices_are_whitelisted_for_the_guard():
@@ -637,3 +641,87 @@ def test_generic_shop_is_micro_not_a_workshop():
     assert infer_segment(Profile(business_type="small shop", employee_count=1)) == "micro"
     assert infer_segment(Profile(business_type="furniture workshop", employee_count=12)) == "mfg"
     assert infer_segment(Profile(business_type="clinic", employee_count=4)) == "prof"
+
+
+def test_adapt_messages_handles_gemini_thought_signatures():
+    hist = [{"role": "user", "content": "hi"},
+            {"role": "assistant", "content": None, "tool_calls": [
+                {"id": "a", "type": "function", "function": {"name": "update_profile", "arguments": "{}"},
+                 "extra_content": {"google": {"thought_signature": "REAL"}}},
+                {"id": "auto_1", "type": "function", "function": {"name": "get_recommendation", "arguments": "{}"}}]},
+            {"role": "tool", "tool_call_id": "a", "content": "{}"}]
+    g = providers.adapt_messages("gemini", hist)
+    sigs = [tc["extra_content"]["google"]["thought_signature"] for tc in g[1]["tool_calls"]]
+    assert sigs == ["REAL", providers.GEMINI_SKIP_SIGNATURE]          # real one kept, injected one gets the placeholder
+    other = providers.adapt_messages("groq", hist)
+    assert all("extra_content" not in tc for tc in other[1]["tool_calls"])
+    assert "extra_content" in hist[1]["tool_calls"][0] and "extra_content" not in hist[1]["tool_calls"][1]   # stored history untouched
+
+
+def test_loop_keeps_the_signature_the_model_returned(monkeypatch, tmp_path):
+    monkeypatch.setattr(cache, "ADVISOR_CACHE", tmp_path)
+    tc = SimpleNamespace(id="c0", function=SimpleNamespace(name="update_profile", arguments="{}"),
+                         model_extra={"extra_content": {"google": {"thought_signature": "SIG"}}})
+    first = SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=None, tool_calls=[tc]))], usage=None)
+    fake = FakeLLM([first, _msg(content="Which city?")])
+    monkeypatch.setattr(chat, "chat_completion", fake)
+    st = State()
+    chat.step(st, "I run a shop", use_cache=False)
+    stored = next(m for m in st.messages if m.get("tool_calls") and m["tool_calls"][0]["id"] == "c0")
+    assert stored["tool_calls"][0]["extra_content"] == {"google": {"thought_signature": "SIG"}}
+
+
+# ---------- certain-facts safety net (online mode) ----------
+@pytest.mark.parametrize("text,expected", [
+    ("We are a physiotherapy clinic in Nagpur with 8 staff, one clinic, GST registered.",
+     {"employee_count": 8, "num_sites": 1, "city": "Nagpur", "has_gstin": True}),
+    ("I want a managed firewall to keep our computers safe", {"requested_products": ["P21"], "needs": ["data_security"]}),
+    ("I want the 5G AirFiber, and a backup so the internet never goes down", {"requested_products": ["P04"], "needs": ["uptime"]}),
+    ("Do I need GST for WhatsApp?", {}),                                           # a question is not a statement
+    ("I don't need cameras, just internet", {}),                                   # negated need is ignored
+    ("कैमरा नहीं चाहिए", {}),
+    ("Interested in WhatsApp orders", {"needs": ["whatsapp_customers"]}),         # "in WhatsApp" is not a city
+])
+def test_certain_facts(text, expected):
+    st = State()
+    got = chat._certain_facts(st, text)
+    got.pop("business_type", None)
+    assert got == expected
+
+
+def test_certain_facts_never_override_recorded_values():
+    st = State()
+    dispatch("update_profile", {"city": "Mumbai", "employee_count": 6, "needs": ["cctv"]}, st)
+    got = chat._certain_facts(st, "Sorry, the office is actually in Nashik with 9 people and we need cameras")
+    assert "city" not in got and "employee_count" not in got and "needs" not in got
+
+
+def test_guard_allows_names_from_the_offered_alternative():
+    st = State()
+    _known(st, business_type="Salon", city="Jaipur", needs=["services_only", "cctv"])
+    alt = dispatch("get_recommendation", {}, st)["alternative_with_accel_line"]
+    name = next(b["name"] for b in alt["bundle"] if b["id"] != "P23")
+    text = f"Cloud CCTV runs only on our line; with {name} it comes to ₹{alt['monthly_from']:,} per month."
+    assert chat._guard(text, st) == text and not st.warnings
+
+
+def test_cancelled_gstin_survives_a_has_gstin_false_from_the_model():
+    st = State()
+    _known(st, business_type="Coaching centre", employee_count=6, city="Kochi", gstin="32HJJXE5083Y1ZR", requested_products=["P13"])
+    r = dispatch("update_profile", {"has_gstin": False}, st)
+    assert st.profile.gstin == "32HJJXE5083Y1ZR" and st.profile.gstin_status == "Cancelled" and "kept_gstin" in r
+    rec = dispatch("get_recommendation", {}, st)
+    assert {e["id"]: e["reason"] for e in rec["excluded"]}["P13"] == "GSTIN_NOT_ACTIVE"
+    st2 = State()
+    _known(st2, has_gstin=True)
+    dispatch("update_profile", {"has_gstin": False}, st2)                 # no GSTIN on record: a plain correction still works
+    assert st2.profile.has_gstin is False
+
+
+def test_guard_does_not_flag_names_inside_bundled_product_descriptions():
+    st = State()
+    _known(st, business_type="Coaching centre", employee_count=12, city="Kolkata", has_gstin=True, no_specific_need=True)
+    dispatch("get_recommendation", {}, st)
+    assert "P02" in {i.product_id for i in st.recommendation.items}
+    text = "Biz Fibre 300 – 300 Mbps fibre, unlimited data, Static IP optional."
+    assert chat._guard(text, st) == text and not st.warnings

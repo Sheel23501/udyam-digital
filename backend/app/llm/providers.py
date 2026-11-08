@@ -86,8 +86,37 @@ def _retry_after(e: Exception, default: float) -> float:
         return default
 
 
+GEMINI_SKIP_SIGNATURE = "skip_thought_signature_validator"   # documented placeholder for tool calls the model did not produce
+
+
+def adapt_messages(provider_name: str, messages: list[dict]) -> list[dict]:
+    """Per-provider history fix-ups, without touching the stored conversation.
+
+    Gemini 3 signs each tool call (`extra_content.google.thought_signature`) and rejects a history whose tool calls
+    lack it, which includes calls the server injected itself and calls made earlier by another provider: those get
+    the documented placeholder. Other providers get the field stripped (they do not need it)."""
+    out = []
+    for m in messages:
+        if m.get("role") == "assistant" and m.get("tool_calls"):
+            m = dict(m)
+            calls = []
+            for tc in m["tool_calls"]:
+                tc = dict(tc)
+                if provider_name == "gemini":
+                    if not (tc.get("extra_content") or {}).get("google", {}).get("thought_signature"):
+                        tc["extra_content"] = {"google": {"thought_signature": GEMINI_SKIP_SIGNATURE}}
+                else:
+                    tc.pop("extra_content", None)
+                calls.append(tc)
+            m["tool_calls"] = calls
+        out.append(m)
+    return out
+
+
 def _call(p: Provider, kwargs: dict):
     client = p.client()
+    if "messages" in kwargs:
+        kwargs = {**kwargs, "messages": adapt_messages(p.name, kwargs["messages"])}
     try:
         return client.chat.completions.create(model=p.model, extra_body=p.extra or None, **kwargs)
     except BadRequestError:

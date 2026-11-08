@@ -83,7 +83,9 @@ verification mandatory for API clients too (the UI always verifies).
 
 ## Advisor on free tiers
 
-Groq's free tier allows 8,000 tokens a minute and **200,000 tokens a day** on `gpt-oss-120b`. One conversation is 5–8 model calls of ~2k tokens (about 10–18k tokens), so a single key covers roughly 15 conversations a day; the provider chain (`ADVISOR_PROVIDER_CHAIN`) moves to Cerebras, Mistral, OpenRouter or Gemini when Groq is busy, skipping any provider without a key.
+The deployed demo runs the advisor on paid Gemini (`gemini-3.5-flash-lite`, about 22k tokens or roughly ₹0.65 a conversation) with free Groq as the backup: `ADVISOR_PROVIDER_CHAIN=gemini,groq`. All 16 transcript scenarios pass live on it. Gemini 3 models sign their tool calls; `llm/providers.py: adapt_messages` sends the signatures back (and a documented placeholder for server-injected calls), which those models require.
+
+On free tiers only: Groq allows 8,000 tokens a minute and **200,000 tokens a day** on `gpt-oss-120b`. One conversation is 5–8 model calls of ~2k tokens (about 10–18k tokens), so a single key covers roughly 15 conversations a day; the provider chain (`ADVISOR_PROVIDER_CHAIN`) moves to Cerebras, Mistral, OpenRouter or Gemini when Groq is busy, skipping any provider without a key.
 
 **Three layers keep the recommendation correct whatever the LLM does:**
 1. The model never picks products. It records facts with `update_profile`; the rules engine returns the bundle, and the model only narrates it. Explicit product asks in the owner's words ("1 Gbps fibre", "toll-free") are recorded by the server even if the model forgets.

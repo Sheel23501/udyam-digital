@@ -1,0 +1,98 @@
+{
+ "reply": "नमस्ते! आपकी दुकान में कुल कितने लोग काम करते हैं (मालिक को मिलाकर)?",
+ "state": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "मेरी साड़ी की दुकान है दिल्ली में"
+   },
+   {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "auto_2_update_profile",
+      "type": "function",
+      "function": {
+       "name": "update_profile",
+       "arguments": "{\"city\": \"Delhi\"}"
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "auto_2_update_profile",
+    "content": "{\"ok\": true, \"profile\": {\"city\": \"Delhi\"}, \"still_needed\": [\"business_type\", \"employee_count\", \"num_sites\", \"has_gstin\", \"needs\"]}"
+   },
+   {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "call_10267043546485544430",
+      "type": "function",
+      "function": {
+       "name": "update_profile",
+       "arguments": "{\"business_type\":\"saree shop\"}"
+      },
+      "extra_content": {
+       "google": {
+        "thought_signature": "EmAKXgFpFH0T3oW3ure4Z4VVgsrr47aE4g6xOsrZ4WRb4hPYSblvVJJRnef6afJLAYEojTw7tPq1o1GV/kCerOsj8pU/yCyX/N9+73vGAypIYuWHqTPi4/f8S6/snzfTeOg="
+       }
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_10267043546485544430",
+    "content": "{\"ok\": true, \"profile\": {\"business_type\": \"saree shop\", \"city\": \"Delhi\"}, \"still_needed\": [\"employee_count\", \"num_sites\", \"has_gstin\", \"needs\"]}"
+   },
+   {
+    "role": "assistant",
+    "content": "नमस्ते! आपकी दुकान में कुल कितने लोग काम करते हैं (मालिक को मिलाकर)?"
+   }
+  ],
+  "profile": {
+   "business_type": "saree shop",
+   "segment": null,
+   "employee_count": null,
+   "num_sites": null,
+   "city": "Delhi",
+   "city_tier": null,
+   "has_gstin": null,
+   "gstin": null,
+   "gstin_status": null,
+   "has_udyam": null,
+   "current_internet": null,
+   "current_provider": null,
+   "monthly_spend": null,
+   "needs": [],
+   "requested_products": [],
+   "language": "hi"
+  },
+  "recommendation": null,
+  "language": "hi",
+  "provider": "gemini",
+  "needs_known": false,
+  "ready_turns": 0,
+  "pending": null,
+  "unsure_turns": 0,
+  "allowed_numbers": [],
+  "allowed_names": [],
+  "line_for_addons": false,
+  "quantities": {},
+  "assumed": {},
+  "user_turns": [
+   "मेरी साड़ी की दुकान है दिल्ली में"
+  ],
+  "usage": {
+   "calls": 2,
+   "prompt_tokens": 4509,
+   "completion_tokens": 37,
+   "auto_calls": 1
+  },
+  "warnings": []
+ }
+}

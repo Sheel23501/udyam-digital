@@ -162,6 +162,20 @@ GSTIN_IN_TEXT = re.compile(r"\b\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]\b")
 DONT_KNOW = re.compile(r"don'?t know|do not know|not sure|no idea|just tell me|whatever|pata nahi|maloom nahi|पता नहीं|मालूम नहीं|कुछ भी", re.I)
 CITY_AFTER_IN = re.compile(r"\b(?:in|at|near)\s+([A-Z][a-zA-Z]{2,}(?:\s+[A-Z][a-zA-Z]{2,})?)")
 NEGATING_BEFORE = re.compile(r"(?:\bnot|\bnahi|\bnahin|instead of|\bfrom|नहीं)\s*$", re.I)
+NEED_NEG_BEFORE = re.compile(r"\b(?:don'?t|do not|no need|not|without|nahi|nahin|mat)\b[^.,;!?]{0,25}$", re.I)
+NEED_NEG_AFTER = re.compile(r"^[^.,;!?]{0,20}(?:\bnahi|\bnahin|\bnot needed|\bno need|नहीं|मत)", re.I)
+
+
+def _needs_in(low: str) -> list[str]:
+    """Needs named in the text, skipping negated mentions ("I don't need cameras", "कैमरा नहीं चाहिए")."""
+    out = []
+    for pattern, need in NEED_WORDS:
+        for m in re.finditer(pattern, low):
+            if NEED_NEG_BEFORE.search(low[:m.start()]) or NEED_NEG_AFTER.search(low[m.end():]):
+                continue
+            out.append(need)
+            break
+    return list(dict.fromkeys(out))
 
 
 def _count_near(text: str, words: str) -> int | None:
@@ -177,8 +191,13 @@ def _count_near(text: str, words: str) -> int | None:
     return None
 
 
-def read_facts(text: str, pending: str | None, cities: dict[str, int], business_types: list[str]) -> dict:
-    """Facts stated in one owner message, as update_profile arguments."""
+def read_facts(text: str, pending: str | None, cities: dict[str, int], business_types: list[str], strict: bool = False) -> dict:
+    """Facts stated in one owner message, as update_profile arguments.
+
+    strict=True (used alongside a live LLM) keeps only the unambiguous readings: known cities only (no "in <Word>"
+    guess), dataset business types only (no generic "shop"), and nothing from questions ("do I need GST?")."""
+    if strict and "?" in (text or ""):
+        return {}
     low = (text or "").lower().translate(DEVANAGARI_DIGITS)
     out: dict = {}
     staff = _count_near(low, STAFF_WORDS)
@@ -199,7 +218,7 @@ def read_facts(text: str, pending: str | None, cities: dict[str, int], business_
     found = [(pos, c) for pos, c in found if not NEGATING_BEFORE.search(low[max(0, pos - 14):pos])]
     if found:
         out["city"] = max(found)[1]                              # the last city mentioned is the one they mean now
-    else:
+    elif not strict:
         m = CITY_AFTER_IN.search(text or "")
         if m and m.group(1).lower() not in {"india", "hindi", "english"}:
             out["city"] = normalise_city(m.group(1), cities)
@@ -214,12 +233,12 @@ def read_facts(text: str, pending: str | None, cities: dict[str, int], business_
         if re.search(rf"\b{re.escape(bt)}\b", low):
             out["business_type"] = bt
             break
-    if "business_type" not in out:
+    if "business_type" not in out and not strict:
         for pattern, label in GENERIC_BUSINESS:
             if re.search(pattern, low):
                 out["business_type"] = label
                 break
-    needs = [need for pattern, need in NEED_WORDS if re.search(pattern, low)]
+    needs = _needs_in(low)
     if needs:
         out["needs"] = needs
     elif NO_NEED.search(low):

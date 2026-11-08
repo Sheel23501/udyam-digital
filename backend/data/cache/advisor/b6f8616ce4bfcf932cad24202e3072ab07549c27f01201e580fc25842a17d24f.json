@@ -1,0 +1,98 @@
+{
+ "reply": "Namaste! Mumbai me dental clinic ke liye aapki clinic me kitne log kaam karte hain (staff count)?",
+ "state": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "Mumbai me meri dental clinic hai"
+   },
+   {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "auto_2_update_profile",
+      "type": "function",
+      "function": {
+       "name": "update_profile",
+       "arguments": "{\"business_type\": \"dental clinic\", \"city\": \"Mumbai\"}"
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "auto_2_update_profile",
+    "content": "{\"ok\": true, \"profile\": {\"business_type\": \"dental clinic\", \"city\": \"Mumbai\"}, \"still_needed\": [\"employee_count\", \"num_sites\", \"has_gstin\", \"needs\"]}"
+   },
+   {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "call_14516974436892945288",
+      "type": "function",
+      "function": {
+       "name": "update_profile",
+       "arguments": "{\"num_sites\":1}"
+      },
+      "extra_content": {
+       "google": {
+        "thought_signature": "EmAKXgFpFH0TYLkbhiBs2iI4wmJd9CoUxo5IXW6g+25t7OXVPNWSj/BaNXr1DDIN8ukvoHQQvTCDwRJ8jam/VV/6tWRXfi+bE0FyJyPRP0r0fZXeMsfLktKTH/831qbxsU4="
+       }
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_14516974436892945288",
+    "content": "{\"ok\": true, \"profile\": {\"business_type\": \"dental clinic\", \"num_sites\": 1, \"city\": \"Mumbai\"}, \"still_needed\": [\"employee_count\", \"has_gstin\", \"needs\"]}"
+   },
+   {
+    "role": "assistant",
+    "content": "Namaste! Mumbai me dental clinic ke liye aapki clinic me kitne log kaam karte hain (staff count)?"
+   }
+  ],
+  "profile": {
+   "business_type": "dental clinic",
+   "segment": null,
+   "employee_count": null,
+   "num_sites": 1,
+   "city": "Mumbai",
+   "city_tier": null,
+   "has_gstin": null,
+   "gstin": null,
+   "gstin_status": null,
+   "has_udyam": null,
+   "current_internet": null,
+   "current_provider": null,
+   "monthly_spend": null,
+   "needs": [],
+   "requested_products": [],
+   "language": "hinglish"
+  },
+  "recommendation": null,
+  "language": "hinglish",
+  "provider": "gemini",
+  "needs_known": false,
+  "ready_turns": 0,
+  "pending": null,
+  "unsure_turns": 0,
+  "allowed_numbers": [],
+  "allowed_names": [],
+  "line_for_addons": false,
+  "quantities": {},
+  "assumed": {},
+  "user_turns": [
+   "Mumbai me meri dental clinic hai"
+  ],
+  "usage": {
+   "calls": 2,
+   "prompt_tokens": 4531,
+   "completion_tokens": 39,
+   "auto_calls": 1
+  },
+  "warnings": []
+ }
+}

@@ -1,0 +1,301 @@
+{
+ "reply": "Here is what I recommend for your kirana store:\n\n- Biz 5G AirFiber 100: Wireless broadband with 100 Mbps for your shop.\n- Business Postpaid 299: A business mobile line with 50 GB data and unlimited calls.\n- Website + Domain Starter: Domain and a simple 5-page website to help customers find you online.\n\nFrom ₹1,497 per month. Zero setup fee, 12-month contract, and installation in 2 days.\n\nWhy not WhatsApp Business API Starter? It needs an active GST registration, so we included the website starter instead.",
+ "state": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "I run a kirana store in Lucknow"
+   },
+   {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "auto_2_update_profile",
+      "type": "function",
+      "function": {
+       "name": "update_profile",
+       "arguments": "{\"business_type\": \"kirana store\", \"city\": \"Lucknow\"}"
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "auto_2_update_profile",
+    "content": "{\"ok\": true, \"profile\": {\"business_type\": \"kirana store\", \"city\": \"Lucknow\"}, \"still_needed\": [\"employee_count\", \"num_sites\", \"has_gstin\", \"needs\"]}"
+   },
+   {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "call_3082617396968366209",
+      "type": "function",
+      "function": {
+       "name": "update_profile",
+       "arguments": "{\"city\":\"Lucknow\"}"
+      },
+      "extra_content": {
+       "google": {
+        "thought_signature": "EmAKXgFpFH0TXm458dDTa+A0fSngtMbQOho5+27UfRL5CyeXLrv2x8LC3OXrD4qKtP745fWayM9lQPnnKQTn/cKfonLwUQMq1Xe2r5vuITE1vNvhksXpKGgAZ7FNqX/n+XM="
+       }
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_3082617396968366209",
+    "content": "{\"ok\": true, \"profile\": {\"business_type\": \"kirana store\", \"city\": \"Lucknow\"}, \"still_needed\": [\"employee_count\", \"num_sites\", \"has_gstin\", \"needs\"]}"
+   },
+   {
+    "role": "assistant",
+    "content": "How many people work at your store, including yourself?"
+   },
+   {
+    "role": "user",
+    "content": "2 people including me, just the one shop"
+   },
+   {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "auto_8_update_profile",
+      "type": "function",
+      "function": {
+       "name": "update_profile",
+       "arguments": "{\"employee_count\": 2, \"num_sites\": 1}"
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "auto_8_update_profile",
+    "content": "{\"ok\": true, \"profile\": {\"business_type\": \"kirana store\", \"employee_count\": 2, \"num_sites\": 1, \"city\": \"Lucknow\"}, \"still_needed\": [\"has_gstin\", \"needs\"]}"
+   },
+   {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "call_13785236100083028438",
+      "type": "function",
+      "function": {
+       "name": "update_profile",
+       "arguments": "{\"num_sites\":1,\"employee_count\":2}"
+      },
+      "extra_content": {
+       "google": {
+        "thought_signature": "EmAKXgFpFH0TCYddXtMBHCdAukwZ6COc1EkzbfWa+4xiHm8XZQNiTPjtODwLNCXgTR2QXa32/GZNRjiJ7w/ma76z3dTdec+HdH4JSaPWv1VUd6wWqOt0b0eKMnaUhEgw5Gc="
+       }
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_13785236100083028438",
+    "content": "{\"ok\": true, \"profile\": {\"business_type\": \"kirana store\", \"employee_count\": 2, \"num_sites\": 1, \"city\": \"Lucknow\"}, \"still_needed\": [\"has_gstin\", \"needs\"]}"
+   },
+   {
+    "role": "assistant",
+    "content": "Is your store registered for GST?"
+   },
+   {
+    "role": "user",
+    "content": "No GST registration"
+   },
+   {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "auto_14_update_profile",
+      "type": "function",
+      "function": {
+       "name": "update_profile",
+       "arguments": "{\"has_gstin\": false}"
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "auto_14_update_profile",
+    "content": "{\"ok\": true, \"profile\": {\"business_type\": \"kirana store\", \"employee_count\": 2, \"num_sites\": 1, \"city\": \"Lucknow\", \"has_gstin\": false}, \"still_needed\": [\"needs\"], \"hint\": \"ask what problem they want solved (or set no_specific_need=true if they just want internet)\"}"
+   },
+   {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "call_849082928478963126",
+      "type": "function",
+      "function": {
+       "name": "update_profile",
+       "arguments": "{\"has_gstin\":false}"
+      },
+      "extra_content": {
+       "google": {
+        "thought_signature": "EmAKXgFpFH0TTrqKe1K21qy5WKaxTcIZq19vk+NnXKbVhjkVyu44oNrXMgs+MOrpZBXfSB8uK+lqlp90xs6X59CqGD3RPhp+JBnrG4av60z837p3a4sJklLJ01SH3qt3TVc="
+       }
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_849082928478963126",
+    "content": "{\"ok\": true, \"profile\": {\"business_type\": \"kirana store\", \"employee_count\": 2, \"num_sites\": 1, \"city\": \"Lucknow\", \"has_gstin\": false}, \"still_needed\": [\"needs\"], \"hint\": \"ask what problem they want solved (or set no_specific_need=true if they just want internet)\"}"
+   },
+   {
+    "role": "assistant",
+    "content": "What would you like to improve or sort out at your store—like fast internet, card machines dropping, or keeping an eye with CCTV?"
+   },
+   {
+    "role": "user",
+    "content": "Customers keep messaging me on WhatsApp for orders. I want a proper WhatsApp business account for the shop."
+   },
+   {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "auto_20_update_profile",
+      "type": "function",
+      "function": {
+       "name": "update_profile",
+       "arguments": "{\"needs\": [\"whatsapp_customers\"]}"
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "auto_20_update_profile",
+    "content": "{\"ok\": true, \"profile\": {\"business_type\": \"kirana store\", \"employee_count\": 2, \"num_sites\": 1, \"city\": \"Lucknow\", \"has_gstin\": false, \"needs\": [\"whatsapp_customers\"]}, \"note\": \"all facts known: call get_recommendation now\"}"
+   },
+   {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "call_96202871683648740",
+      "type": "function",
+      "function": {
+       "name": "get_recommendation",
+       "arguments": "{}"
+      },
+      "extra_content": {
+       "google": {
+        "thought_signature": "EmAKXgFpFH0Tte0r7I/FIPvYXgbEHgetbvAQsuOr5YlTBjdUHD6xcH5BJ5jqgPi6fSjvVqGDt0ru3nnMAr1295vfxAlXNCHDqyFdbidbWLqjGVxC37bzsiyprLPsg1CdAdU="
+       }
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_96202871683648740",
+    "content": "{\"bundle\": [{\"id\": \"P04\", \"name\": \"Biz 5G AirFiber 100\", \"qty\": 1, \"unit\": \"per site\", \"price_from_per_unit\": 899}, {\"id\": \"P07\", \"name\": \"Business Postpaid 299\", \"qty\": 1, \"unit\": \"per line\", \"price_from_per_unit\": 299}, {\"id\": \"P18\", \"name\": \"Website + Domain Starter\", \"qty\": 1, \"unit\": \"per account\", \"price_from_per_unit\": 299}], \"monthly_from\": 1497, \"monthly_upto\": 1997, \"setup_one_time\": 0, \"contract_months\": 12, \"install_days\": 2, \"excluded\": [{\"id\": \"P15\", \"name\": \"WhatsApp Business API Starter\", \"reason\": \"GSTIN_REQUIRED\", \"why\": \"WhatsApp Business API Starter needs an active GST registration\"}], \"notes\": [\"Offered Website + Domain Starter instead of WhatsApp Business API Starter\"]}"
+   },
+   {
+    "role": "assistant",
+    "content": "Here is what I recommend for your kirana store:\n\n- Biz 5G AirFiber 100: Wireless broadband with 100 Mbps for your shop.\n- Business Postpaid 299: A business mobile line with 50 GB data and unlimited calls.\n- Website + Domain Starter: Domain and a simple 5-page website to help customers find you online.\n\nFrom ₹1,497 per month. Zero setup fee, 12-month contract, and installation in 2 days.\n\nWhy not WhatsApp Business API Starter? It needs an active GST registration, so we included the website starter instead."
+   }
+  ],
+  "profile": {
+   "business_type": "kirana store",
+   "segment": null,
+   "employee_count": 2,
+   "num_sites": 1,
+   "city": "Lucknow",
+   "city_tier": 2,
+   "has_gstin": false,
+   "gstin": null,
+   "gstin_status": null,
+   "has_udyam": null,
+   "current_internet": null,
+   "current_provider": null,
+   "monthly_spend": null,
+   "needs": [
+    "whatsapp_customers"
+   ],
+   "requested_products": [],
+   "language": "en"
+  },
+  "recommendation": {
+   "segment": "micro",
+   "items": [
+    {
+     "product_id": "P04",
+     "qty": 1
+    },
+    {
+     "product_id": "P07",
+     "qty": 1
+    },
+    {
+     "product_id": "P18",
+     "qty": 1
+    }
+   ],
+   "excluded": [
+    {
+     "product_id": "P15",
+     "reason": "GSTIN_REQUIRED",
+     "detail": "WhatsApp Business API Starter needs an active GST registration"
+    }
+   ],
+   "notes": [
+    {
+     "type": "fallback",
+     "product_id": "P18",
+     "because_of": "P15",
+     "detail": "Offered Website + Domain Starter instead of WhatsApp Business API Starter"
+    }
+   ],
+   "monthly_min": 1497,
+   "monthly_max": 1997,
+   "setup": 0,
+   "contract_months": 12,
+   "install_days": 2
+  },
+  "language": "en",
+  "provider": "gemini",
+  "needs_known": true,
+  "ready_turns": 1,
+  "pending": null,
+  "unsure_turns": 0,
+  "allowed_numbers": [
+   0,
+   1,
+   2,
+   12,
+   299,
+   899,
+   1497,
+   1997
+  ],
+  "allowed_names": [],
+  "line_for_addons": false,
+  "quantities": {},
+  "assumed": {},
+  "user_turns": [
+   "I run a kirana store in Lucknow",
+   "2 people including me, just the one shop",
+   "No GST registration",
+   "Customers keep messaging me on WhatsApp for orders. I want a proper WhatsApp business account for the shop."
+  ],
+  "usage": {
+   "calls": 8,
+   "prompt_tokens": 20867,
+   "completion_tokens": 248,
+   "auto_calls": 4
+  },
+  "warnings": []
+ }
+}
