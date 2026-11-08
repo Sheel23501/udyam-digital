@@ -4,6 +4,7 @@ pydantic>=2
 pandas
 google-genai
 openai
+httpx
 python-multipart
 opencv-python-headless
 pillow

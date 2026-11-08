@@ -39,4 +39,23 @@ Groq's free tier allows 8,000 tokens a minute and **200,000 tokens a day** on `g
 
 Live transcripts recorded on Groq are in `docs/demo-transcripts.md`.
 
+## API (what the UI calls, open to judges)
+
+Start it with `cd backend && uvicorn app.main:app --reload --port 8000`; interactive docs at `http://localhost:8000/docs`.
+
+| Step | Call | Notes |
+|---|---|---|
+| Start | `POST /sessions {language, partner_code?}` | returns `session_id` |
+| Advisor | `POST /advisor/chat {session_id, text}` | reply + `profile` + `recommendation` (engine JSON the card is drawn from) |
+| Quote edits | `POST /engine/validate {profile, items}` | violations with reasons, price, what else is addable |
+| Engine only | `POST /engine/recommend` (Profile) · `GET /catalogue` | deterministic, no LLM |
+| Consent | `GET /consent/notice?lang=hi` · `POST /consent {session_id, purposes, language}` · `DELETE /consent/{id}` | all four required purposes must be ticked |
+| KYC | `POST /kyc/upload` (multipart: `session_id`, `doc_type`, `file`) · `POST /kyc/run {session_id, sample_applicant?}` · `GET /kyc/{application_id}` | **403 without consent.** `sample_applicant: "K01".."K12"` uses the provided packs from cached extractions |
+| Registry | `GET /lookup/gstin/{gstin}` · `GET /lookup/udyam/{number}` | masked output, 30 req/min, audited |
+| Order | `POST /orders {session_id, items?}` · `GET /orders/{id}` · `POST /orders/{id}/advance` | needs a PASS KYC on the session; ETA per stage |
+| Back-office | `GET /backoffice/leads` · `GET /backoffice/leads/{id}/score` · `POST /backoffice/handoff` · `GET /backoffice/audit` | live unclosed sessions + 200 scored historical drops |
+| Privacy admin | `POST /admin/retention/run` · `POST /admin/erase/{session_id}` | retention purge; DPDP erasure request |
+
+Privacy plumbing lives in `backend/app/privacy/`: `consent.py` (itemised purposes, withdrawal), `masking.py`, `audit.py` (masked subjects only), `retention.py` (30 days rejected / 90 days verified, erasure).
+
 _Sections below are filled in as the build progresses: architecture, what is mocked vs real, privacy note, known limitations._
