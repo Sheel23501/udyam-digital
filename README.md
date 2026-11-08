@@ -2,7 +2,9 @@
 
 A phone-first, Hindi/English journey that lets a small business owner discover the right Accel Business bundle, get a single-price quote, complete Smart KYC against mock GSTIN/Udyam registries, and track activation — with no salesperson in the loop.
 
-**Stack:** Python 3.13 · FastAPI · SQLite · Streamlit · advisor LLM on Groq `openai/gpt-oss-120b` (OpenAI-compatible, fallback Cerebras → Gemini) · KYC vision on Gemini (`google-genai`). Runs entirely on free tiers.
+**Stack:** Python 3.13 · FastAPI · SQLite · Streamlit · advisor LLM on Groq `openai/gpt-oss-120b` through an OpenAI-compatible provider chain (Cerebras → Mistral → OpenRouter → Gemini as fallbacks) · KYC vision on Gemini (`google-genai`). Runs entirely on free tiers.
+
+**Docs:** [architecture](docs/architecture.md) · [privacy & security note (DPDP)](docs/privacy-note.md) · [deploy](docs/deploy.md) · [demo script & live-scenario playbook](docs/demo-script.md) · [demo transcripts](docs/demo-transcripts.md) · [charts and the numbers behind them](docs/charts/README.md)
 
 **Design rule:** the rules engine (`backend/app/engine/`) decides what may be sold; the LLM only asks questions and narrates the engine's result. Every bundle is re-validated before it is shown.
 
@@ -93,4 +95,30 @@ Start it with `cd backend && uvicorn app.main:app --reload --port 8000`; interac
 
 Privacy plumbing lives in `backend/app/privacy/`: `consent.py` (itemised purposes, withdrawal), `masking.py`, `audit.py` (masked subjects only), `retention.py` (30 days rejected / 90 days verified, erasure).
 
-_Sections below are filled in as the build progresses: architecture, what is mocked vs real, privacy note, known limitations._
+## Architecture
+
+![Architecture](docs/architecture.png)
+
+Full description, Mermaid source, repository map and the mocked-vs-real table: [docs/architecture.md](docs/architecture.md).
+
+## What is mocked vs real
+
+| Component | In this prototype | Production |
+|---|---|---|
+| GSTIN / Udyam registries | CSV-backed mocks (3,534 / 2,723 rows); GSTIN format and check-digit validation are real | GSTN/GSP API, Udyam API |
+| Document reading | Gemini vision with a Pydantic schema; sha256 cache so the 12 sample packs need no quota | same, plus DigiLocker pull |
+| OTP, e-sign, payment, notifications | demo code `1234`; toggle only | SMS OTP, eSign, payment gateway, WhatsApp/SMS |
+| Serviceability | city tier from the leads file | real-time feasibility API |
+| Back-office scoring | logistic regression trained on the leads file (holdout AUC 0.68), blended with drop-reason recoverability | retrained on live outcomes |
+
+## Known limitations
+
+- Free-tier LLM quotas (Groq: 200k tokens/day) mean the advisor's prose can fall back to the rules-engine text during heavy use; the quote is unaffected.
+- Hindi, English and Hinglish are first-class; other Indian languages get an English reply with an offer of Hindi/English.
+- The skew gate catches rotated scans (≥ 2°) but not perspective distortion from a hand-held photo taken at an angle.
+- Docker images are written but were not built on the development machine (no Docker); the two-process and Docker paths are documented, the one-process Streamlit Cloud path is the one that was deployed and tested.
+- Partner assignment in the back-office is a UI stub; sessions do record the partner code and referrer.
+
+## Data notes used in the pitch
+
+All computed by `backend/scripts/make_charts.py` from the leads file (see `docs/charts/numbers.json`): 4,632 of 5,000 leads dropped and 48.5% of those drops were the sales process itself; micro retail via field sales cost ₹53,026 per activation for ₹2,619/month; referrals activate at 14.8% vs 7.3% for field sales; GST-registered leads activate at 9.6% vs 2.0%; median lead-to-activation 17 days; customers who had to call 5+ times churned at 28% vs 6% for one call; Hindi + English cover 66% of leads.
