@@ -1,0 +1,4 @@
+# UI-only container (API_MODE=http talks to the backend container): no backend packages needed.
+streamlit>=1.40
+requests
+pandas

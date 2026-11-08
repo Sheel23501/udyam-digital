@@ -1,0 +1,55 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    name: tests, scenarios, KYC key, offline advisor
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: install
+        run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends libglib2.0-0
+          pip install -r requirements.txt pytest
+      - name: backend tests
+        working-directory: backend
+        run: pytest -q
+      - name: UI tests (headless journey)
+        run: pytest frontend/tests -q
+      - name: judge scripts
+        working-directory: backend
+        env:
+          ADVISOR_OFFLINE: "1"
+        run: |
+          python scripts/run_scenarios.py
+          python scripts/kyc_report.py --key tests/kyc_answer_key_images.json
+          python scripts/run_llm_scenarios.py --allow-offline
+
+  docker:
+    name: docker compose up + smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: build
+        run: docker compose build
+      - name: up (waits for healthchecks)
+        run: docker compose up -d --wait --wait-timeout 300
+      - name: smoke test
+        run: ./scripts/docker_smoke.sh
+      - name: logs on failure
+        if: failure()
+        run: docker compose logs --tail 200
+      - name: down
+        if: always()
+        run: docker compose down -v
