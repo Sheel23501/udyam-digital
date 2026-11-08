@@ -8,6 +8,8 @@ A phone-first, Hindi/English journey that lets a small business owner discover t
 
 **Checking it yourself:** [step-by-step guide](docs/how-to-check.md): clone → install → one-shot checks → every API endpoint by hand with expected output.
 
+**Submission deck:** [business case, 10 slides on the Airtel SYNC template](docs/Udyam_Digital_Submission.pptx) ([PDF](docs/Udyam_Digital_Submission.pdf)); regenerate with `cd backend && python scripts/make_deck.py` (every figure comes from `docs/charts/numbers.json` and the rules engine).
+
 **Docs:** [architecture](docs/architecture.md) · [privacy & security note (DPDP)](docs/privacy-note.md) · [deploy](docs/deploy.md) · [demo script & live-scenario playbook](docs/demo-script.md) · [demo transcripts](docs/demo-transcripts.md) · [charts and the numbers behind them](docs/charts/README.md)
 
 **Design rule:** the rules engine (`backend/app/engine/`) decides what may be sold; the LLM only asks questions and narrates the engine's result. Every bundle is re-validated before it is shown.

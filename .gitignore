@@ -17,3 +17,5 @@ frontend/.streamlit/secrets.toml
 STREAMLIT_CLOUD_SECRETS.toml
 # OTP HMAC secret, generated on first run when OTP_SECRET is not set
 backend/data/.otp_secret
+# backgrounds extracted from the official SYNC template by scripts/make_deck.py (already embedded in the .pptx)
+docs/.deck_assets/
