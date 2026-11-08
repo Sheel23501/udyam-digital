@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """Generate text-level KYC fixtures for applicants K01-K12 into tests/kyc_fields/.
 
-Every certificate in the sample pack reproduces its registry record exactly, except for the planted faults found
-by inspecting all 47 images (see HACKATHON_WIN_PLAN.md §3.2). So each fixture = registry record + the observed
-deviation. Re-run after changing the deviations table; the JSON files are committed so judges can read/edit them.
+Every certificate in the sample pack reproduces its registry record exactly, except for the deliberate faults found
+by inspecting all 47 images. So each fixture = registry record + the observed deviation. Re-run after changing the
+deviations table; the JSON files are committed so judges can read/edit them.
 """
 import json
 import sys

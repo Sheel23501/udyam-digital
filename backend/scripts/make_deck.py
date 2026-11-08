@@ -23,7 +23,7 @@ from app.engine.catalogue import catalogue  # noqa: E402
 from app.engine.models import Need, Profile  # noqa: E402
 
 TEMPLATE = ROOT.parent / "6ad9d4887d445_airtel_sync" / "Submission Template_Sync.pptx"
-OUT = ROOT / "docs" / "UdyamDigital_IIITDelhi.pptx"      # TeamName_CampusName, as the submission rules ask
+OUT = ROOT / "docs" / "TeamIIITD_IIITDelhi.pptx"      # TeamName_CampusName, as the submission rules ask
 NUMBERS = json.loads((ROOT / "docs" / "charts" / "numbers.json").read_text(encoding="utf-8"))
 WORK = ROOT / "docs" / ".deck_assets"
 
@@ -207,11 +207,12 @@ def bundle(profile: Profile) -> dict:
 # ---------------------------------------------------------------- slides
 LIVE_URL = "https://udyam-digital-isyfatadrab4adtbqddzwp.streamlit.app"
 REPO_URL = "https://github.com/Sheel23501/udyam-digital"
+VIDEO_URL = "https://drive.google.com/file/d/1G7UT9ZO75mXUsZjOKNznb0FuvgKb8-um/view?usp=sharing"
 
 
-def link_button(slide, x, y, w, label, shown, url, fill, outline=None):
+def link_button(slide, x, y, w, label, shown, url, fill, outline=None, h=0.38):
     """A pill that opens `url` on click (the whole shape and the text are both links)."""
-    sh = rect(slide, x, y, w, 0.38, fill=fill, line_color=outline, shape=MSO_SHAPE.ROUNDED_RECTANGLE, radius=0.5, line_w=1.5)
+    sh = rect(slide, x, y, w, h, fill=fill, line_color=outline, shape=MSO_SHAPE.ROUNDED_RECTANGLE, radius=0.5, line_w=1.5)
     sh.click_action.hyperlink.address = url
     tf = sh.text_frame
     tf.margin_left = Inches(0.18)
@@ -234,15 +235,18 @@ def link_button(slide, x, y, w, label, shown, url, fill, outline=None):
 
 def slide_title(prs, bg):
     s = new_slide(prs, bg)                                     # the SYNC wordmark sits at y 1.85-2.5 in; everything goes below it
-    rect(s, 0.55, 2.75, 0.08, 1.35, fill=RED)
-    text(s, 0.75, 2.62, 5.0, 0.3, "ENTERPRISE TRACK A · PROJECT UDYAM DIGITAL", size=10, bold=True, color=RGBColor(0xFF, 0x8F, 0xB1))
-    text(s, 0.75, 2.9, 5.2, 0.7, "Udyam Digital", size=36, bold=True, color=WHITE)
-    text(s, 0.75, 3.55, 5.0, 0.7, "A small business goes live in one sitting: on a phone, in Hindi or English, with no salesperson in the loop.",
-         size=13, color=RGBColor(0xF3, 0xF4, 0xF6), line=1.2)
-    text(s, 0.75, 4.12, 5.6, 0.3, [[("Sheel Gautam · Vikas Meena", {"bold": True, "color": WHITE, "size": 12}),
-                                    ("   IIIT Delhi · November 2026", {"color": RGBColor(0xD1, 0xD5, 0xDB), "size": 10})]])
-    link_button(s, 0.75, 4.55, 5.55, "LIVE PROTOTYPE", "udyam-digital-isyfatadrab4adtbqddzwp.streamlit.app", LIVE_URL, RED)
-    link_button(s, 0.75, 5.0, 5.55, "CODE ON GITHUB", "github.com/Sheel23501/udyam-digital", REPO_URL, RGBColor(0x1A, 0x1A, 0x1A), outline=WHITE)
+    rect(s, 0.55, 2.6, 0.08, 1.55, fill=RED)
+    text(s, 0.75, 2.6, 5.0, 0.3, "ENTERPRISE TRACK A · PROJECT UDYAM DIGITAL", size=10, bold=True, color=RGBColor(0xFF, 0x8F, 0xB1))
+    text(s, 0.75, 2.86, 5.2, 0.62, "Udyam Digital", size=34, bold=True, color=WHITE)
+    text(s, 0.75, 3.46, 5.0, 0.55, "A small business goes live in one sitting: on a phone, in Hindi or English, with no salesperson in the loop.",
+         size=12.5, color=RGBColor(0xF3, 0xF4, 0xF6), line=1.18)
+    text(s, 0.75, 4.03, 5.6, 0.46, [
+        [("Team IIITD", {"bold": True, "color": WHITE, "size": 12.5})],
+        [("Sheel Gautam · Vikas Meena   ·   IIIT Delhi · November 2026", {"color": RGBColor(0xD1, 0xD5, 0xDB), "size": 10})],
+    ], line=1.15)
+    link_button(s, 0.75, 4.48, 5.55, "LIVE PROTOTYPE", "udyam-digital-isyfatadrab4adtbqddzwp.streamlit.app", LIVE_URL, RED, h=0.33)
+    link_button(s, 0.75, 4.85, 5.55, "PROTOTYPE VIDEO", "Watch the 3-minute demo on Google Drive", VIDEO_URL, RGBColor(0x1A, 0x1A, 0x1A), outline=WHITE, h=0.33)
+    link_button(s, 0.75, 5.22, 5.55, "CODE ON GITHUB", "github.com/Sheel23501/udyam-digital", REPO_URL, RGBColor(0x1A, 0x1A, 0x1A), outline=WHITE, h=0.33)
     return s
 
 
