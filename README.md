@@ -1,5 +1,7 @@
 # Udyam Digital — Accel Business SMB onboarding (YTL Hackathon 2026, Track A)
 
+[![ci](https://github.com/Sheel23501/udyam-digital/actions/workflows/ci.yml/badge.svg)](https://github.com/Sheel23501/udyam-digital/actions/workflows/ci.yml)
+
 A phone-first, Hindi/English journey that lets a small business owner discover the right Accel Business bundle, get a single-price quote, complete Smart KYC against mock GSTIN/Udyam registries, and track activation — with no salesperson in the loop.
 
 **Stack:** Python 3.13 · FastAPI · SQLite · Streamlit · advisor LLM on Groq `openai/gpt-oss-120b` through an OpenAI-compatible provider chain (Cerebras → Mistral → OpenRouter → Gemini as fallbacks) · KYC vision on Gemini (`google-genai`). Runs entirely on free tiers.
@@ -52,7 +54,9 @@ The root `requirements.txt` and `packages.txt` are for this deployment. No other
 UI on Streamlit Community Cloud with secrets `API_MODE = "http"` and `BACKEND_URL = "https://<your-render-url>"`.
 
 **Docker (judges / any VM):** `cp .env.example .env`, add keys (optional), then `docker compose up --build` → API :8000, UI :8501.
-Docker is not installed on the development Mac, so the images were written to the compose spec but not built here.
+Every push is verified by GitHub Actions (`.github/workflows/ci.yml`): both images are built, `docker compose up --wait` brings them
+up healthy, and `scripts/docker_smoke.sh` checks health, the engine checkpoint, the consent gate (403), sample KYC K03 PASS / K11 FAIL,
+an advisor reply, and the UI reaching the API over the compose network. Run the same smoke test locally after `docker compose up -d`.
 
 ## For judges
 
@@ -116,7 +120,7 @@ Full description, Mermaid source, repository map and the mocked-vs-real table: [
 - Free-tier LLM quotas (Groq: 200k tokens/day) mean the advisor's prose can fall back to the rules-engine text during heavy use; the quote is unaffected.
 - Hindi, English and Hinglish are first-class; other Indian languages get an English reply with an offer of Hindi/English.
 - The skew gate catches rotated scans (≥ 2°) but not perspective distortion from a hand-held photo taken at an angle.
-- Docker images are written but were not built on the development machine (no Docker); the two-process and Docker paths are documented, the one-process Streamlit Cloud path is the one that was deployed and tested.
+- The one-process Streamlit Cloud deployment is the one used for the live demo; the Docker path is verified in CI on every push rather than on a long-running host.
 - Partner assignment in the back-office is a UI stub; sessions do record the partner code and referrer.
 
 ## Data notes used in the pitch
