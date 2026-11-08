@@ -48,7 +48,7 @@ flowchart LR
 | Component | Prototype | Production adapter |
 |---|---|---|
 | GSTIN / Udyam registries | CSV-backed mock (3,534 / 2,723 rows), format + checksum real | GSTN/GSP API, Udyam API |
-| OTP | demo code 1234 | SMS OTP provider |
+| OTP | random code per request, HMAC-hashed, expiry, attempt lock, rate limits; on-screen demo SMS unless `SMS_PROVIDER` is set | SMS gateway on a DLT-registered template |
 | Document extraction | Gemini vision with Pydantic schema, sha256 cache | same, plus DigiLocker pull where available |
 | e-sign / payment | not in scope | eSign (Aadhaar/DSC), payment gateway |
 | Serviceability | tier table from leads | real-time feasibility API |

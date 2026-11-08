@@ -6,6 +6,7 @@ from ..advisor import sessions
 from ..advisor.chat import step
 from ..advisor.explain import explain
 from ..advisor.tools import missing_fields, rec_payload
+from ..auth import otp
 
 router = APIRouter(tags=["advisor"])
 
@@ -14,6 +15,8 @@ class NewSession(BaseModel):
     language: str = Field("en", description="en | hi | hinglish (the advisor also auto-detects from what the owner types)")
     partner_code: str | None = None
     referrer: str | None = Field(None, description="session id of the customer who referred this one")
+    otp_token: str | None = Field(None, description="from POST /auth/otp/verify; binds the session to a verified mobile number. "
+                                                     "Required when the server runs with REQUIRE_OTP=1")
 
 
 class ChatIn(BaseModel):
@@ -30,8 +33,16 @@ def session_view(sid: str) -> dict:
 
 @router.post("/sessions", status_code=201)
 def create_session(body: NewSession) -> dict:
-    sid = sessions.create(body.language, body.partner_code, body.referrer)
-    return {"session_id": sid, "language": body.language, "partner_code": body.partner_code}
+    phone = None
+    if body.otp_token:
+        phone = otp.consume_token(body.otp_token)
+        if phone is None:
+            raise HTTPException(401, {"error": "invalid_otp_token", "message": "Mobile verification expired or was already used. Please verify again."})
+    elif otp.require_otp():
+        raise HTTPException(401, {"error": "otp_required", "message": "Verify your mobile number first (POST /auth/otp/request, then /auth/otp/verify)."})
+    sid = sessions.create(body.language, body.partner_code, body.referrer, phone=phone)
+    return {"session_id": sid, "language": body.language, "partner_code": body.partner_code,
+            "phone_verified": phone is not None, "phone_masked": (phone or {}).get("phone_masked")}
 
 
 @router.get("/sessions/{session_id}")

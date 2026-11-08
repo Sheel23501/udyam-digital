@@ -19,7 +19,7 @@ same process (`API_MODE = "inprocess"`). Nothing else to host, nothing to pay fo
      ```toml
      API_MODE = "inprocess"
      TODAY = "2026-07-15"
-     STAFF_PIN = "1234"
+     STAFF_PIN = "<choose a private PIN>"
      GEMINI_VISION_MODEL = "gemini-3.5-flash-lite"
      GEMINI_MODEL = "gemini-3.5-flash-lite"
      ADVISOR_MODEL_GROQ = "openai/gpt-oss-120b"
@@ -30,10 +30,10 @@ same process (`API_MODE = "inprocess"`). Nothing else to host, nothing to pay fo
 5. Click **Deploy**. The first build takes 3–6 minutes (it installs the root `requirements.txt` and `packages.txt`).
    Watch the log on the right; "You can now view your Streamlit app" means it is up.
 6. **Smoke test on your phone** (open the URL in the phone browser):
-   language → mobile `9876543210` → code `1234` → tap the first example chip → card → **See my price** → toggles →
+   language → your mobile number → the 6-digit code shown in the demo SMS (or texted, if an SMS provider is set) → tap the first example chip → card → **See my price** → toggles →
    **Continue** → tick the 4 required purposes → **I agree** → **Use a sample applicant** → `K11` → **Verify** (must say
    *Could not verify*, old bill) → **Try another sample** → `K03` → **Verify** (*Verified*) → **Place my order** → tracker →
-   **Advance stage** → **Finish**. Then open the sidebar (top-left arrow) → **backoffice** → PIN `1234`.
+   **Advance stage** → **Finish**. Then open the sidebar (top-left arrow) → **backoffice** → your `STAFF_PIN`.
 7. Later changes: every push to `main` redeploys automatically. Secrets can be edited any time from the app's menu
    (**⋮ → Settings → Secrets**); the app restarts on save.
 
@@ -56,7 +56,7 @@ Use this only if you want the HTTP API itself public for judges (e.g. to share `
    ```toml
    API_MODE = "http"
    BACKEND_URL = "https://udyam-digital-api.onrender.com"
-   STAFF_PIN = "1234"
+   STAFF_PIN = "<choose a private PIN>"
    ```
 
 ## C. Docker (any VM, judges)

@@ -9,7 +9,10 @@ FRONT = Path(__file__).resolve().parents[1]
 os.environ["API_MODE"] = "inprocess"
 os.environ["ADVISOR_OFFLINE"] = "1"
 os.environ["UI_STREAM_DELAY_S"] = "0"
+os.environ["STAFF_PIN"] = "test-pin-4821"
 sys.path.insert(0, str(FRONT))
+
+import random  # noqa: E402
 
 from streamlit.testing.v1 import AppTest  # noqa: E402
 
@@ -27,16 +30,26 @@ def texts(at: AppTest) -> str:
     return "\n".join(m.value for m in at.markdown) + "\n" + "\n".join(c.value for c in at.caption)
 
 
+def new_phone() -> str:
+    """A fresh number per test so the per-number resend cooldown and hourly cap never collide across tests or runs."""
+    return random.choice("6789") + "".join(random.choice("0123456789") for _ in range(9))
+
+
 def to_chat(at: AppTest, lang_key: str = "lang_en") -> AppTest:
     at.button(key=lang_key).click().run()
     assert at.session_state["step"] == "otp"
-    at.text_input(key="phone").set_value("9876543210").run()
+    at.text_input(key="phone").set_value(new_phone()).run()
     at.button(key="send_otp").click().run()
-    assert not at.exception and at.session_state["otp_sent"]
-    at.text_input(key="otp_code").set_value("1234").run()
+    assert not at.exception, at.exception
+    otp = at.session_state["otp"]
+    code = otp["demo_code"]                                         # demo mode: this run's own random code
+    assert len(code) == 6 and code.isdigit()
+    assert any(code in m.value for m in at.markdown)                # shown on screen as the labelled demo SMS
+    at.text_input(key="otp_code").set_value(code).run()
     at.button(key="verify_otp").click().run()
     assert not at.exception, at.exception
     assert at.session_state["step"] == "chat" and at.session_state["session_id"]
+    assert at.session_state["phone_masked"].startswith("XXXXXX")
     assert len(at.session_state["transcript"]) == 1                # opening message, no API call spent
     return at
 
@@ -53,12 +66,30 @@ def test_otp_validation_messages():
     at.button(key="lang_en").click().run()
     at.text_input(key="phone").set_value("12345").run()
     at.button(key="send_otp").click().run()
-    assert any("10-digit" in e.value for e in at.error)
-    at.text_input(key="phone").set_value("9876543210").run()
+    assert any("10-digit" in e.value for e in at.error) and "otp" not in at.session_state
+    at.text_input(key="phone").set_value(new_phone()).run()
     at.button(key="send_otp").click().run()
-    at.text_input(key="otp_code").set_value("0000").run()
+    code = at.session_state["otp"]["demo_code"]
+    wrong = "000000" if code != "000000" else "111111"
+    at.text_input(key="otp_code").set_value(wrong).run()
     at.button(key="verify_otp").click().run()
-    assert any("1234" in e.value for e in at.error) and at.session_state["step"] == "otp"
+    assert any("4 tries left" in e.value for e in at.error) and at.session_state["step"] == "otp"
+    shown = " ".join(m.value for m in [*at.markdown, *at.caption, *at.error, *at.success])
+    assert "Try 1234" not in shown and "code is 1234" not in shown                       # the old fixed-code hints are gone
+    assert at.button(key="resend_otp").disabled                                           # cooldown on resend
+    at.button(key="change_number").click().run()
+    assert "otp" not in at.session_state and at.button(key="send_otp")
+
+
+def test_each_otp_request_gets_a_different_code():
+    codes = set()
+    for _ in range(3):
+        at = start()
+        at.button(key="lang_en").click().run()
+        at.text_input(key="phone").set_value(new_phone()).run()
+        at.button(key="send_otp").click().run()
+        codes.add(at.session_state["otp"]["demo_code"])
+    assert len(codes) == 3
 
 
 def test_full_journey_english_with_sample_kyc():
@@ -156,7 +187,7 @@ def test_backoffice_page_pin_queue_and_audit():
     at.text_input(key="staff_pin").set_value("0000").run()
     at.button(key="staff_enter").click().run()
     assert at.error and not at.session_state.get("staff_ok")
-    at.text_input(key="staff_pin").set_value("1234").run()
+    at.text_input(key="staff_pin").set_value("test-pin-4821").run()
     at.button(key="staff_enter").click().run()
     assert not at.exception, at.exception
     assert at.session_state["staff_ok"]

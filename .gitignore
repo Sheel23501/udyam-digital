@@ -15,3 +15,5 @@ frontend/.streamlit/secrets.toml
 .pytest_cache/
 # generated from .env for pasting into Streamlit Cloud; never commit
 STREAMLIT_CLOUD_SECRETS.toml
+# OTP HMAC secret, generated on first run when OTP_SECRET is not set
+backend/data/.otp_secret

@@ -1,4 +1,5 @@
 """Back-office: leads the digital journey could not close, scored for the field team; audit log; privacy admin."""
+import hmac
 import os
 
 import pandas as pd
@@ -9,17 +10,20 @@ import api_client as api
 st.set_page_config(page_title="Accel Business · Back office", page_icon="🗂️", layout="wide")
 st.markdown("<style>#MainMenu, footer {visibility:hidden;}</style>", unsafe_allow_html=True)
 
-PIN = os.getenv("STAFF_PIN", "1234")
+PIN = os.getenv("STAFF_PIN", "").strip()        # no default PIN: the page stays locked until one is set
 ss = st.session_state
 if not ss.get("staff_ok"):
     st.title("Back office")
+    if not PIN:
+        st.error("The back office is locked: no staff PIN is configured. Set STAFF_PIN in .env (local) or in the app's Secrets (Streamlit Cloud).")
+        st.stop()
     pin = st.text_input("Staff PIN", type="password", key="staff_pin")
     if st.button("Enter", key="staff_enter", type="primary"):
-        if pin == PIN:
+        if hmac.compare_digest((pin or "").encode(), PIN.encode()):
             ss.staff_ok = True
             st.rerun()
         else:
-            st.error("Wrong PIN (demo PIN: 1234)")
+            st.error("Wrong PIN.")
     st.stop()
 
 if api.health() is None:

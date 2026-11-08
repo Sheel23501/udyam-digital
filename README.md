@@ -28,10 +28,10 @@ Free keys: Groq at console.groq.com, Cerebras at cloud.cerebras.ai, Gemini at ai
 `./run_local.sh` starts the API on :8000 and the UI on :8501. Or run only `streamlit run frontend/app.py`: when no backend
 answers, the UI imports the backend package and calls it in-process (`API_MODE=auto`), so one process is enough.
 
-Journey: language → mobile + OTP (demo code `1234`) → advisor chat (Hindi / English / Hinglish, example chips) → recommendation card
+Journey: language → mobile number + one-time code (a fresh random 6-digit code per request, see below) → advisor chat (Hindi / English / Hinglish, example chips) → recommendation card
 drawn from engine JSON → quote with toggles and quantities, every change re-validated → DPDP consent with itemised purposes → Smart KYC
 (upload four photos, or pick sample applicant K01–K12) → order → tracker with dated stages, demo "advance" and consent withdrawal.
-Back-office page (sidebar, staff PIN `1234`): scored queue of unclosed leads, lead detail with reasons, audit log, retention purge, erasure.
+Back-office page (sidebar, staff PIN from `STAFF_PIN`; no default): scored queue of unclosed leads, lead detail with reasons, audit log, retention purge, erasure.
 
 Headless UI tests drive the whole journey with Streamlit's `AppTest` and no server: `pytest frontend/tests -q` from the repo root.
 
@@ -47,7 +47,7 @@ API_MODE = "inprocess"          # the UI serves the API in the same process
 GROQ_API_KEY = "..."
 GEMINI_API_KEY = "..."
 TODAY = "2026-07-15"
-STAFF_PIN = "1234"
+STAFF_PIN = "<choose a PIN>"
 ```
 
 The root `requirements.txt` and `packages.txt` are for this deployment. No other service is needed.
@@ -70,6 +70,16 @@ All commands run from `backend/` with the virtualenv active.
 - **Tests:** `pytest -q` — rules, dependency closure, a 900-profile invariant grid, KYC validators, image gates, and the advisor tool loop with a fake provider (no network).
 
 Scenario JSON formats are documented at the top of each script.
+
+## Mobile verification (OTP)
+
+`POST /auth/otp/request {phone}` generates a fresh random 6-digit code for every request (never a fixed code), stores only
+an HMAC of it, and sends it through `SMS_PROVIDER`. `POST /auth/otp/verify {request_id, code}` checks it (5-minute expiry,
+single use, locked after 5 wrong tries) and returns a single-use token that `POST /sessions {otp_token}` turns into a
+phone-verified session; the number itself is stored only as an HMAC and a masked form. Resend cooldown (30 s) and hourly
+caps per number and per client stop SMS-bombing. With no SMS gateway configured (`SMS_PROVIDER=demo`, the default) nothing
+is texted: the API returns the code and the app shows it as a clearly labelled demo SMS. `REQUIRE_OTP=1` makes
+verification mandatory for API clients too (the UI always verifies).
 
 ## Advisor on free tiers
 
@@ -113,7 +123,8 @@ Full description, Mermaid source, repository map and the mocked-vs-real table: [
 |---|---|---|
 | GSTIN / Udyam registries | CSV-backed mocks (3,534 / 2,723 rows); GSTIN format and check-digit validation are real | GSTN/GSP API, Udyam API |
 | Document reading | Gemini vision with a Pydantic schema; sha256 cache so the 12 sample packs need no quota | same, plus DigiLocker pull |
-| OTP, e-sign, payment, notifications | demo code `1234`; toggle only | SMS OTP, eSign, payment gateway, WhatsApp/SMS |
+| OTP | real OTP service (random code, hashed, 5-min expiry, 5 tries, resend cooldown, hourly caps); delivery = on-screen demo SMS unless `SMS_PROVIDER` is set | SMS gateway on a DLT-registered template |
+| e-sign, payment, notifications | not in scope; toggle only | eSign, payment gateway, WhatsApp/SMS |
 | Serviceability | city tier from the leads file | real-time feasibility API |
 | Back-office scoring | logistic regression trained on the leads file (holdout AUC 0.68), blended with drop-reason recoverability | retrained on live outcomes |
 

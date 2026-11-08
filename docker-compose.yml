@@ -26,7 +26,7 @@ services:
       BACKEND_URL: "http://backend:8000"
       API_MODE: "http"
       PORT: "8501"
-      STAFF_PIN: "1234"
+      STAFF_PIN: "${STAFF_PIN:-}"          # from .env; empty = back office locked
     ports:
       - "8501:8501"
     depends_on:

@@ -18,6 +18,18 @@ curl -fsS -X POST "$API/engine/recommend" -H 'content-type: application/json' \
   | json "[(e['product_id'], e['reason']) for e in d['excluded']] == [('P15', 'GSTIN_REQUIRED')]" | grep -q True || fail "recommend"
 echo ok
 
+echo "== OTP: random code, wrong code rejected, right code -> phone-verified session"
+PHONE="9$(python3 -c 'import random; print(random.randint(100000000, 999999999))')"
+OTP=$(curl -fsS -X POST "$API/auth/otp/request" -H 'content-type: application/json' -d "{\"phone\":\"$PHONE\"}")
+RID=$(echo "$OTP" | json "d['request_id']"); CODE=$(echo "$OTP" | json "d['demo_code']")
+[ "${#CODE}" = "6" ] || fail "demo code should be 6 digits (is SMS_PROVIDER set? this smoke test expects demo mode)"
+WRONG=$([ "$CODE" = "000000" ] && echo 111111 || echo 000000)
+WC=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$API/auth/otp/verify" -H 'content-type: application/json' -d "{\"request_id\":\"$RID\",\"code\":\"$WRONG\"}")
+[ "$WC" = "400" ] || fail "wrong code should be 400, got $WC"
+TOKEN=$(curl -fsS -X POST "$API/auth/otp/verify" -H 'content-type: application/json' -d "{\"request_id\":\"$RID\",\"code\":\"$CODE\"}" | json "d['otp_token']")
+curl -fsS -X POST "$API/sessions" -H 'content-type: application/json' -d "{\"otp_token\":\"$TOKEN\"}" | json "d['phone_verified']" | grep -q True || fail "otp session"
+echo ok
+
 echo "== consent gate: KYC without consent must be 403"
 SID=$(curl -fsS -X POST "$API/sessions" -H 'content-type: application/json' -d '{"language":"en"}' | json "d['session_id']")
 CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$API/kyc/run" -H 'content-type: application/json' -d "{\"session_id\":\"$SID\",\"sample_applicant\":\"K03\"}")

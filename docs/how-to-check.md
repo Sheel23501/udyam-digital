@@ -140,7 +140,29 @@ curl -s -X POST localhost:8000/engine/validate -H 'content-type: application/jso
 ```
 Expect `violations: [('P99', 'UNKNOWN_PRODUCT'), ('P21', 'MIN_EMPLOYEES')]`.
 
-**6.5 Start a customer session** — saves the id in `SID` for the next blocks.
+**6.5a Mobile verification (OTP)** — a fresh random code per request; wrong codes count down; the right code gives a
+single-use token that creates a phone-verified session. With no SMS provider configured (the default) the API returns
+the code as `demo_code` so it can be shown on screen; with a real provider it is only texted.
+
+```bash
+PHONE=9$(python3 -c "import random; print(random.randint(100000000, 999999999))")
+OTP=$(curl -s -X POST localhost:8000/auth/otp/request -H 'content-type: application/json' -d "{\"phone\":\"+91 $PHONE\"}")
+echo "$OTP" | python3 -c "import sys,json; d=json.load(sys.stdin); print('sent to', d['phone_masked'], '| provider', d['provider'], '| expires in', d['expires_in'], 's | code', d['demo_code'])"
+RID=$(echo "$OTP" | python3 -c "import sys,json; print(json.load(sys.stdin)['request_id'])")
+CODE=$(echo "$OTP" | python3 -c "import sys,json; print(json.load(sys.stdin)['demo_code'])")
+curl -s -X POST localhost:8000/auth/otp/verify -H 'content-type: application/json' -d "{\"request_id\":\"$RID\",\"code\":\"000000\"}" | python3 -m json.tool
+TOKEN=$(curl -s -X POST localhost:8000/auth/otp/verify -H 'content-type: application/json' -d "{\"request_id\":\"$RID\",\"code\":\"$CODE\"}" | python3 -c "import sys,json; print(json.load(sys.stdin)['otp_token'])")
+curl -s -X POST localhost:8000/sessions -H 'content-type: application/json' -d "{\"language\":\"en\",\"otp_token\":\"$TOKEN\"}" | python3 -m json.tool
+curl -s -o /dev/null -w "same token again -> %{http_code}\n" -X POST localhost:8000/sessions -H 'content-type: application/json' -d "{\"otp_token\":\"$TOKEN\"}"
+curl -s -o /dev/null -w "new code right away -> %{http_code}\n" -X POST localhost:8000/auth/otp/request -H 'content-type: application/json' -d "{\"phone\":\"$PHONE\"}"
+```
+Expect `sent to XXXXXX....  | provider demo | expires in 300 s | code <6 random digits>` (a different code every time);
+then `"error": "wrong_code"` with `"attempts_left": 4`; then a session with `"phone_verified": true` and the masked
+number; then `same token again -> 401` (single use) and `new code right away -> 429` (30-second resend cooldown).
+After 5 wrong tries a code is locked; codes expire after 5 minutes; a number gets at most 5 codes an hour.
+
+**6.5 Start a customer session** — saves the id in `SID` for the next blocks. (The API also accepts sessions without
+an OTP token so it is easy to test; start the server with `REQUIRE_OTP=1` to make verification mandatory.)
 
 ```bash
 SID=$(curl -s -X POST localhost:8000/sessions -H 'content-type: application/json' -d '{"language":"en"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['session_id'])")
@@ -266,7 +288,7 @@ curl -s -X DELETE localhost:8000/consent/$CID | python3 -m json.tool
 curl -s -o /dev/null -w "KYC after withdrawal -> %{http_code}\n" -X POST localhost:8000/kyc/run -H 'content-type: application/json' -d "{\"session_id\":\"$SID\",\"sample_applicant\":\"K03\"}"
 curl -s -X POST localhost:8000/admin/retention/run -H 'content-type: application/json' -d '{}' | python3 -c "import sys,json; d=json.load(sys.stdin); print('removed:', len(d['removed']), 'kept:', d['kept'])"
 ```
-Expect a `withdrawn_ts` timestamp, then `KYC after withdrawal -> 403`, then `removed: 0 kept: 1` (the upload from 6.11
+Expect a `withdrawn_ts` timestamp, then `KYC after withdrawal -> 403`, then `removed: 0` and `kept:` 1 or more (the upload from 6.11
 is fresh, so it is kept; rejected uploads are deleted after 30 days, verified ones after 90).
 <!-- check:end -->
 
@@ -331,7 +353,9 @@ Run: `cd backend && ADVISOR_OFFLINE=1 python scripts/run_llm_scenarios.py ../my_
 ```bash
 ./run_local.sh            # API on :8000 and the phone-shaped UI on :8501
 ```
-Open http://localhost:8501. Demo OTP is `1234`, back-office staff PIN is `1234` (sidebar → backoffice).
+Open http://localhost:8501. Enter any Indian mobile number: a fresh 6-digit code is generated for every request and, with no SMS
+provider configured, shown on screen as a labelled demo SMS. For the back office (sidebar → backoffice) set a PIN first:
+`STAFF_PIN=your-pin ./run_local.sh`.
 The click-through is in [demo-script.md](demo-script.md).
 
 ---

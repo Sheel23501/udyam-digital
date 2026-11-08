@@ -19,7 +19,8 @@ def now_iso() -> str:
 def _ensure_columns() -> None:
     con = connect()
     cols = {r[1] for r in con.execute("PRAGMA table_info(sessions)").fetchall()}
-    for col, ddl in (("handoff_reason", "TEXT"), ("updated", "TEXT")):
+    for col, ddl in (("handoff_reason", "TEXT"), ("updated", "TEXT"), ("phone_hash", "TEXT"), ("phone_masked", "TEXT"),
+                     ("phone_verified", "INTEGER DEFAULT 0")):
         if col not in cols:
             try:
                 con.execute(f"ALTER TABLE sessions ADD COLUMN {col} {ddl}")
@@ -28,12 +29,15 @@ def _ensure_columns() -> None:
     con.commit()
 
 
-def create(language: str = "en", partner_code: str | None = None, referrer: str | None = None) -> str:
+def create(language: str = "en", partner_code: str | None = None, referrer: str | None = None, phone: dict | None = None) -> str:
+    """phone: the identity from a verified OTP ({phone_hash, phone_masked}); the raw number is never stored."""
     _ensure_columns()
     sid = uuid.uuid4().hex[:12]
     con = connect()
-    con.execute("INSERT INTO sessions(id, created, updated, language, partner_code, referrer, status) VALUES (?,?,?,?,?,?,?)",
-                (sid, now_iso(), now_iso(), language, partner_code, referrer, "open"))
+    con.execute("INSERT INTO sessions(id, created, updated, language, partner_code, referrer, status, phone_hash, phone_masked, phone_verified) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (sid, now_iso(), now_iso(), language, partner_code, referrer, "open",
+                 (phone or {}).get("phone_hash"), (phone or {}).get("phone_masked"), 1 if phone else 0))
     con.commit()
     _STATES[sid] = State(language=language if language in ("en", "hi", "hinglish") else "en")
     return sid
@@ -52,6 +56,7 @@ def get(session_id: str) -> dict | None:
     out = {
         "session_id": d["id"], "created": d["created"], "updated": d.get("updated"), "language": d["language"],
         "partner_code": d["partner_code"], "referrer": d["referrer"], "status": d["status"], "handoff_reason": d.get("handoff_reason"),
+        "phone_masked": d.get("phone_masked"), "phone_verified": bool(d.get("phone_verified")),
         "profile": json.loads(d["profile_json"]) if d["profile_json"] else None,
         "recommendation": json.loads(d["recommendation_json"]) if d["recommendation_json"] else None,
     }

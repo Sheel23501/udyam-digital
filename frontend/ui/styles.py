@@ -41,6 +41,8 @@ html, body, [class*="css"], .stMarkdown, .stChatMessage, button, input, textarea
 .tl .lab { font-size:0.95rem; }  .tl .eta { color:#6B7280; font-size:0.8rem; }
 .big-btn button { width:100%; padding:0.8rem; font-size:1.05rem; }
 .chip button { border-radius:999px; font-size:0.85rem; padding:0.25rem 0.75rem; }
+.sms { background:#F1F5F9; border-radius:14px 14px 14px 4px; padding:10px 12px; margin:6px 0 2px 0; font-size:0.95rem; }
+.sms .sms-from { color:#6B7280; font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px; }
 div[data-testid="stToast"] { font-family: Inter, 'Noto Sans Devanagari', sans-serif; }
 </style>"""
 
