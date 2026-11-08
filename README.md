@@ -31,6 +31,8 @@ Headless UI tests drive the whole journey with Streamlit's `AppTest` and no serv
 
 ## Deploy (all free, no card)
 
+Click-by-click steps, the phone smoke test and troubleshooting are in [docs/deploy.md](docs/deploy.md).
+
 **Option A — one process on Streamlit Community Cloud (recommended):** New app → this repo → main file `frontend/app.py` →
 Advanced settings: Python 3.13, secrets:
 

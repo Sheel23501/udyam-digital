@@ -41,8 +41,20 @@ MODE_SETTING = (_setting("API_MODE", "auto") or "auto").lower()
 TIMEOUT = float(_setting("API_TIMEOUT_S", "90") or 90)
 
 
+def _export_secrets_to_env() -> None:
+    """Streamlit Cloud secrets -> environment, so the in-process backend (which reads os.getenv) sees the API keys.
+    Never overrides a variable that is already set."""
+    try:
+        for k, v in st.secrets.items():
+            if isinstance(v, (str, int, float, bool)) and k not in os.environ:
+                os.environ[k] = str(v)
+    except Exception:  # noqa: BLE001 — no secrets file locally
+        pass
+
+
 @st.cache_resource(show_spinner=False)
 def _inprocess_client():
+    _export_secrets_to_env()
     root = Path(__file__).resolve().parents[1] / "backend"
     if str(root) not in sys.path:
         sys.path.insert(0, str(root))
