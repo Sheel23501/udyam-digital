@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+*.db
+.env
+backend/data/cache/
+backend/data/uploads/
+frontend/.streamlit/secrets.toml
+*.joblib
+.DS_Store
+.pytest_cache/
