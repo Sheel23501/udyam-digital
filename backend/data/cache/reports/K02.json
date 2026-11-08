@@ -1,0 +1,39 @@
+{
+  "applicant": "K02",
+  "verdict": "REVIEW",
+  "checks": [
+    {
+      "code": "DOC_MISSING",
+      "status": "PASS",
+      "evidence": "",
+      "message_en": "All required documents received.",
+      "message_hi": "सभी ज़रूरी दस्तावेज़ मिल गए।"
+    },
+    {
+      "code": "IMAGE_SKEWED",
+      "status": "REVIEW",
+      "evidence": "skew=7.0° (1446x1894)",
+      "message_en": "Your gst certificate is rotated/tilted. Please place the document flat and photograph it straight on.",
+      "message_hi": "GST प्रमाणपत्र की फ़ोटो तिरछी है। कृपया दस्तावेज़ सीधा रखकर फ़ोटो लें।"
+    },
+    {
+      "code": "UDYAM_NAME",
+      "status": "PASS",
+      "evidence": "cert=Harmony Dental Care registry=Harmony Dental Care",
+      "message_en": "Udyam registration verified.",
+      "message_hi": "उद्यम पंजीकरण सत्यापित।"
+    },
+    {
+      "code": "ADDRESS_PROOF_STALE",
+      "status": "PASS",
+      "evidence": "2026-05-22 (54 days)",
+      "message_en": "Address proof is 54 days old.",
+      "message_hi": "पते का प्रमाण 54 दिन पुराना है।"
+    }
+  ],
+  "masked": {
+    "udyam": "UDYAM-WB-00-XXXX330"
+  },
+  "next_step_en": "Please re-upload the documents flagged above; nothing else is needed.",
+  "next_step_hi": "ऊपर बताए दस्तावेज़ दोबारा अपलोड करें; और कुछ नहीं चाहिए।"
+}

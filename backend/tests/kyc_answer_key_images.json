@@ -1,0 +1,15 @@
+{
+  "_note": "Image-level answer key: gates run before extraction, so K02 (rotated GST cert) and K04 (blurred GST cert) are REVIEW for photo quality.",
+  "K01": {"verdict": "FAIL",   "codes": ["GSTIN_STATUS", "UDYAM_MISSING_NUMBER"]},
+  "K02": {"verdict": "REVIEW", "codes": ["IMAGE_SKEWED"]},
+  "K03": {"verdict": "PASS",   "codes": []},
+  "K04": {"verdict": "REVIEW", "codes": ["IMAGE_BLURRED"]},
+  "K05": {"verdict": "FAIL",   "codes": ["DOC_MISSING"]},
+  "K06": {"verdict": "FAIL",   "codes": ["GSTIN_CHECKSUM", "GSTIN_NOT_IN_REGISTRY"]},
+  "K07": {"verdict": "FAIL",   "codes": ["NAME_MISMATCH"]},
+  "K08": {"verdict": "PASS",   "codes": []},
+  "K09": {"verdict": "PASS",   "codes": []},
+  "K10": {"verdict": "FAIL",   "codes": ["SIGNATORY_NOT_AUTHORISED"]},
+  "K11": {"verdict": "FAIL",   "codes": ["ADDRESS_PROOF_STALE"]},
+  "K12": {"verdict": "PASS",   "codes": []}
+}

@@ -1,0 +1,89 @@
+{
+  "applicant": "K01",
+  "verdict": "FAIL",
+  "checks": [
+    {
+      "code": "DOC_MISSING",
+      "status": "PASS",
+      "evidence": "",
+      "message_en": "All required documents received.",
+      "message_hi": "सभी ज़रूरी दस्तावेज़ मिल गए।"
+    },
+    {
+      "code": "GSTIN_CHECKSUM",
+      "status": "PASS",
+      "evidence": "37IHKXV5167L1ZS",
+      "message_en": "GSTIN format and check digit are valid.",
+      "message_hi": "GSTIN का प्रारूप सही है।"
+    },
+    {
+      "code": "GSTIN_STATUS",
+      "status": "FAIL",
+      "evidence": "Cancelled",
+      "message_en": "GST registration is Cancelled. We can only onboard businesses with an active GSTIN; please reactivate it or proceed without GST products.",
+      "message_hi": "GST पंजीकरण Cancelled है। सक्रिय GSTIN के बिना हम GST वाले उत्पाद नहीं दे सकते।"
+    },
+    {
+      "code": "UDYAM_MISSING_NUMBER",
+      "status": "FAIL",
+      "evidence": "",
+      "message_en": "The Udyam certificate has no registration number on it. Please upload a valid Udyam certificate.",
+      "message_hi": "उद्यम प्रमाणपत्र पर पंजीकरण संख्या नहीं है। कृपया वैध प्रमाणपत्र अपलोड करें।"
+    },
+    {
+      "code": "STATE_MISMATCH",
+      "status": "PASS",
+      "evidence": "GSTIN code=Andhra Pradesh; GST certificate=Andhra Pradesh; Registry=Andhra Pradesh",
+      "message_en": "State is consistent across GSTIN, certificates and registry.",
+      "message_hi": "राज्य सभी दस्तावेज़ों में एक जैसा है।"
+    },
+    {
+      "code": "GST_DATE_MISMATCH",
+      "status": "PASS",
+      "evidence": "cert=2025-06-07 registry=2025-06-07",
+      "message_en": "Registration date matches the registry.",
+      "message_hi": "पंजीकरण तिथि रजिस्ट्री से मेल खाती है।"
+    },
+    {
+      "code": "NAME_MISMATCH",
+      "status": "PASS",
+      "evidence": "trade_name=Vindhya Tours & Travels",
+      "message_en": "Business name is consistent across all documents.",
+      "message_hi": "व्यवसाय का नाम सभी दस्तावेज़ों में एक जैसा है।"
+    },
+    {
+      "code": "ADDRESS_MISMATCH",
+      "status": "PASS",
+      "evidence": "GST certificate=118383; Electricity bill=118383; Registry=118383",
+      "message_en": "Address proof matches the registered place of business.",
+      "message_hi": "पते का प्रमाण पंजीकृत पते से मेल खाता है।"
+    },
+    {
+      "code": "SIGNATORY_NOT_AUTHORISED",
+      "status": "PASS",
+      "evidence": "id=Neha Kaur; record=Neha Kaur (the GST certificate)",
+      "message_en": "The signatory matches the person of record for this business.",
+      "message_hi": "हस्ताक्षरकर्ता रिकॉर्ड से मेल खाता है।"
+    },
+    {
+      "code": "DESIGNATION_UNUSUAL",
+      "status": "WARN",
+      "evidence": "Office admin on Proprietorship",
+      "message_en": "'Office admin' is an unusual designation for a Proprietorship; we will confirm at activation.",
+      "message_hi": "पदनाम इस प्रकार के व्यवसाय के लिए असामान्य है; सक्रियण पर पुष्टि करेंगे।"
+    },
+    {
+      "code": "ADDRESS_PROOF_STALE",
+      "status": "PASS",
+      "evidence": "2026-06-26 (19 days)",
+      "message_en": "Address proof is 19 days old.",
+      "message_hi": "पते का प्रमाण 19 दिन पुराना है।"
+    }
+  ],
+  "masked": {
+    "gstin": "37XXXXXXXXXX1ZS",
+    "udyam": "UDYAM-XX-XX-XXXXXXX"
+  },
+  "next_step_en": "Fix the 2 issues above and upload again, or tap 'Talk to a human' and we will call you.",
+  "next_step_hi": "ऊपर बताई 2 समस्या ठीक करके दोबारा अपलोड करें, या 'किसी व्यक्ति से बात करें' दबाएँ।"
+}

@@ -1,0 +1,39 @@
+{
+  "applicant": "K04",
+  "verdict": "REVIEW",
+  "checks": [
+    {
+      "code": "DOC_MISSING",
+      "status": "PASS",
+      "evidence": "",
+      "message_en": "All required documents received.",
+      "message_hi": "सभी ज़रूरी दस्तावेज़ मिल गए।"
+    },
+    {
+      "code": "IMAGE_BLURRED",
+      "status": "REVIEW",
+      "evidence": "blur=1 < 100",
+      "message_en": "Your gst certificate is blurred, so we cannot read it reliably. Please re-take the photo holding the phone still, in good light.",
+      "message_hi": "GST प्रमाणपत्र की फ़ोटो धुंधली है। कृपया फ़ोन स्थिर रखकर, अच्छी रोशनी में दोबारा फ़ोटो लें।"
+    },
+    {
+      "code": "UDYAM_NAME",
+      "status": "PASS",
+      "evidence": "cert=Saffron Dental Care LLP registry=Saffron Dental Care LLP",
+      "message_en": "Udyam registration verified.",
+      "message_hi": "उद्यम पंजीकरण सत्यापित।"
+    },
+    {
+      "code": "ADDRESS_PROOF_STALE",
+      "status": "PASS",
+      "evidence": "2026-05-28 (48 days)",
+      "message_en": "Address proof is 48 days old.",
+      "message_hi": "पते का प्रमाण 48 दिन पुराना है।"
+    }
+  ],
+  "masked": {
+    "udyam": "UDYAM-MH-00-XXXX836"
+  },
+  "next_step_en": "Please re-upload the documents flagged above; nothing else is needed.",
+  "next_step_hi": "ऊपर बताए दस्तावेज़ दोबारा अपलोड करें; और कुछ नहीं चाहिए।"
+}

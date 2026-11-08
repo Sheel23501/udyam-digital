@@ -24,7 +24,23 @@ def normalise_gstin(raw: str) -> str:
     for i in LETTER_POSITIONS:
         chars[i] = chars[i].translate(_TO_LETTER)
     chars[13] = "Z"                        # always 'Z' by format; OCR often reads '2'
-    return "".join(chars)
+    return resolve_check_char("".join(chars))
+
+
+_TWINS = {"0": "O", "O": "0", "1": "I", "I": "1", "5": "S", "S": "5", "8": "B", "B": "8", "2": "Z", "Z": "2", "6": "G", "G": "6"}
+
+
+def resolve_check_char(g: str) -> str:
+    """The 15th character may be a digit or a letter, so position rules cannot fix an OCR confusable there — but the
+    check digit is computable from the first 14. If the read character is exactly the OCR twin of the computed one,
+    use the computed one. Any other difference is left alone (and fails the checksum, as it should)."""
+    from .checksum import check_char
+    if len(g) != 15:
+        return g
+    expected = check_char(g[:14])
+    if expected and g[14] != expected and _TWINS.get(g[14]) == expected:
+        return g[:14] + expected
+    return g
 
 
 _UDYAM_RE = re.compile(r"UDYAM[-\s]*([A-Z]{2})[-\s]*(\d{2})[-\s]*(\d{7})")

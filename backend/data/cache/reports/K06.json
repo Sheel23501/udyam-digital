@@ -1,0 +1,61 @@
+{
+  "applicant": "K06",
+  "verdict": "FAIL",
+  "checks": [
+    {
+      "code": "DOC_MISSING",
+      "status": "PASS",
+      "evidence": "",
+      "message_en": "All required documents received.",
+      "message_hi": "सभी ज़रूरी दस्तावेज़ मिल गए।"
+    },
+    {
+      "code": "GSTIN_CHECKSUM",
+      "status": "FAIL",
+      "evidence": "08YKZXS8189L1Z0",
+      "message_en": "The GSTIN on the certificate does not pass its check digit. Please upload the original certificate.",
+      "message_hi": "GSTIN का चेक अंक मेल नहीं खाता। कृपया असली प्रमाणपत्र अपलोड करें।"
+    },
+    {
+      "code": "GSTIN_NOT_IN_REGISTRY",
+      "status": "FAIL",
+      "evidence": "near_match=['08YKZXS5189L1ZO']",
+      "message_en": "This GSTIN was not found in the GST registry. A registration with a very similar number exists for this business name, so the certificate may have been altered.",
+      "message_hi": "यह GSTIN रजिस्ट्री में नहीं मिला। इसी नाम से मिलती-जुलती संख्या मौजूद है — प्रमाणपत्र बदला गया हो सकता है।"
+    },
+    {
+      "code": "UDYAM_NAME",
+      "status": "PASS",
+      "evidence": "cert=Saffron Unisex Salon registry=Saffron Unisex Salon",
+      "message_en": "Udyam registration verified.",
+      "message_hi": "उद्यम पंजीकरण सत्यापित।"
+    },
+    {
+      "code": "NAME_MISMATCH",
+      "status": "PASS",
+      "evidence": "trade_name=Saffron Unisex Salon",
+      "message_en": "Business name is consistent across all documents.",
+      "message_hi": "व्यवसाय का नाम सभी दस्तावेज़ों में एक जैसा है।"
+    },
+    {
+      "code": "SIGNATORY_NOT_AUTHORISED",
+      "status": "PASS",
+      "evidence": "id=Pooja Shah; record=Pooja Shah (the GST certificate)",
+      "message_en": "The signatory matches the person of record for this business.",
+      "message_hi": "हस्ताक्षरकर्ता रिकॉर्ड से मेल खाता है।"
+    },
+    {
+      "code": "ADDRESS_PROOF_STALE",
+      "status": "PASS",
+      "evidence": "2026-06-11 (34 days)",
+      "message_en": "Address proof is 34 days old.",
+      "message_hi": "पते का प्रमाण 34 दिन पुराना है।"
+    }
+  ],
+  "masked": {
+    "gstin": "08XXXXXXXXXX1Z0",
+    "udyam": "UDYAM-RJ-00-XXXX157"
+  },
+  "next_step_en": "Fix the 2 issues above and upload again, or tap 'Talk to a human' and we will call you.",
+  "next_step_hi": "ऊपर बताई 2 समस्या ठीक करके दोबारा अपलोड करें, या 'किसी व्यक्ति से बात करें' दबाएँ।"
+}

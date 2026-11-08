@@ -3,7 +3,7 @@ __pycache__/
 *.pyc
 *.db
 .env
-backend/data/cache/
+# extraction cache + reports for the 12 sample applicants are committed on purpose (offline demo, quota-free tests)
 backend/data/uploads/
 frontend/.streamlit/secrets.toml
 *.joblib

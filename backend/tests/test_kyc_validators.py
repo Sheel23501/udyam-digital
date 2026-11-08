@@ -35,6 +35,9 @@ def test_normalise_fixes_confusables_by_position_only():
     assert normalise_gstin("O8YKZXS5189L1ZO") == "08YKZXS5189L1ZO"       # O -> 0 in a digit slot, last char untouched
     assert normalise_gstin("27 XUIX G0767 D1ZP") == "27XUIXG0767D1ZP"
     assert normalise_gstin("08YKZXS8189L1ZO") == "08YKZXS8189L1ZO"       # a tampered digit is NOT corrected
+    assert normalise_gstin("24X0RXG9365M1Z3") == "24XORXG9365M1Z3"       # K08 as Gemini read it
+    assert normalise_gstin("08YKZXS5189L1Z0") == "08YKZXS5189L1ZO"       # check char read as 0: checksum says O
+    assert normalise_gstin("08YKZXS8189L1Z0") == "08YKZXS8189L1Z0"       # tampered digit AND misread check char: still invalid
 
 
 def test_normalise_udyam_and_pin():

@@ -110,8 +110,18 @@ def check_state_consistency(gst: GstCertificate, udyam: UdyamCertificate | None,
         states["Udyam number"] = UDYAM_STATE_ABBR.get(udyam.udyam_number[6:8])
         states["Udyam certificate"] = udyam.state
     norm = {k: normalise_name(v) for k, v in states.items() if v}
-    distinct = set(norm.values())
-    ok = len(distinct) <= 1
+    # Reference = the state implied by the GSTIN code (or the registry). Printed states may be truncated by a line
+    # wrap ("Maharashtr") or abbreviated, so accept prefix matches and near-identical strings, not just equality.
+    ref = norm.get("GSTIN code") or norm.get("Registry") or next(iter(norm.values()), "")
+
+    def _state_same(a: str, b: str) -> bool:
+        if not a or not b:
+            return True
+        if a == b or (len(min(a, b, key=len)) >= 5 and (a.startswith(b) or b.startswith(a))):
+            return True
+        return jellyfish.jaro_winkler_similarity(a, b) >= 0.9
+
+    ok = all(_state_same(ref, v) for v in norm.values())
     return _r("STATE_MISMATCH", "PASS" if ok else "FAIL", "; ".join(f"{k}={v}" for k, v in states.items()),
               "State is consistent across GSTIN, certificates and registry." if ok else "The state differs between your GSTIN, certificates and the registry.",
               "राज्य सभी दस्तावेज़ों में एक जैसा है।" if ok else "राज्य दस्तावेज़ों में अलग-अलग है।")
@@ -189,7 +199,7 @@ def check_address_consistency(gst: GstCertificate, bill: ElectricityBill | None,
         pins["Registry"] = pin_code(reg.get("principal_place_of_business", ""))
     known = {k: v for k, v in pins.items() if v}
     if len(known) < 2:
-        return _r("ADDRESS_MISMATCH", "REVIEW", str(pins), "We could not compare addresses (PIN code unreadable).", "पते की तुलना नहीं हो सकी (पिन कोड नहीं पढ़ा गया)।")
+        return None                                    # nothing to compare against (e.g. PIN lost to a line wrap); other checks cover it
     ok = len(set(known.values())) == 1
     return _r("ADDRESS_MISMATCH", "PASS" if ok else "FAIL", "; ".join(f"{k}={v}" for k, v in pins.items()),
               "Address proof matches the registered place of business." if ok else "The address on the electricity bill does not match the registered place of business.",

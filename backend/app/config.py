@@ -20,5 +20,7 @@ DB_PATH = DATA_DIR / "udyam.db"
 CACHE_DIR = DATA_DIR / "cache"
 UPLOAD_DIR = DATA_DIR / "uploads"
 
-# Calibrated in Phase 4 against the 47 sample images (K04's GST cert is the blurred outlier).
+# Image gates, calibrated in Phase 4 against the 47 sample images (K04's GST cert is the blurred outlier,
+# K02's GST cert the rotated one). Override via .env if you photograph your own documents.
 BLUR_THRESHOLD = float(os.getenv("BLUR_THRESHOLD", "100"))
+SKEW_THRESHOLD_DEG = float(os.getenv("SKEW_THRESHOLD_DEG", "2.0"))

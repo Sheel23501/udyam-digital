@@ -14,8 +14,12 @@ def evaluate(
     bill: ElectricityBill | None,
     image_flags: list[CheckResult] | None = None,
     udyam_only_path: bool = False,
+    uploaded: set[str] | None = None,
 ) -> KycReport:
-    present = {name for name, doc in (("gst_certificate", gst), ("udyam_certificate", udyam), ("signatory_id", sig), ("address_proof", bill)) if doc is not None}
+    """`uploaded` = doc types the applicant submitted (a gated/unreadable upload still counts as submitted);
+    defaults to the docs for which fields are available."""
+    present = uploaded if uploaded is not None else {
+        name for name, doc in (("gst_certificate", gst), ("udyam_certificate", udyam), ("signatory_id", sig), ("address_proof", bill)) if doc is not None}
     checks: list[CheckResult] = [V.check_completeness(present, udyam_only_path)]
     checks += image_flags or []
     masked: dict[str, str] = {}

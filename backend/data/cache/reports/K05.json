@@ -1,0 +1,74 @@
+{
+  "applicant": "K05",
+  "verdict": "FAIL",
+  "checks": [
+    {
+      "code": "DOC_MISSING",
+      "status": "FAIL",
+      "evidence": "udyam_certificate",
+      "message_en": "Missing document: udyam certificate. Please upload it to continue.",
+      "message_hi": "दस्तावेज़ नहीं मिला: उद्यम प्रमाणपत्र। कृपया अपलोड करें।"
+    },
+    {
+      "code": "GSTIN_CHECKSUM",
+      "status": "PASS",
+      "evidence": "32TZAXB5481U1Z1",
+      "message_en": "GSTIN format and check digit are valid.",
+      "message_hi": "GSTIN का प्रारूप सही है।"
+    },
+    {
+      "code": "GSTIN_STATUS",
+      "status": "PASS",
+      "evidence": "Active",
+      "message_en": "GST registration is active.",
+      "message_hi": "GST पंजीकरण सक्रिय है।"
+    },
+    {
+      "code": "STATE_MISMATCH",
+      "status": "PASS",
+      "evidence": "GSTIN code=Kerala; GST certificate=Kerala; Registry=Kerala",
+      "message_en": "State is consistent across GSTIN, certificates and registry.",
+      "message_hi": "राज्य सभी दस्तावेज़ों में एक जैसा है।"
+    },
+    {
+      "code": "GST_DATE_MISMATCH",
+      "status": "PASS",
+      "evidence": "cert=2020-07-26 registry=2020-07-26",
+      "message_en": "Registration date matches the registry.",
+      "message_hi": "पंजीकरण तिथि रजिस्ट्री से मेल खाती है।"
+    },
+    {
+      "code": "NAME_MISMATCH",
+      "status": "PASS",
+      "evidence": "trade_name=Balaji Realty LLP",
+      "message_en": "Business name is consistent across all documents.",
+      "message_hi": "व्यवसाय का नाम सभी दस्तावेज़ों में एक जैसा है।"
+    },
+    {
+      "code": "ADDRESS_MISMATCH",
+      "status": "PASS",
+      "evidence": "GST certificate=None; Electricity bill=752083; Registry=752083",
+      "message_en": "Address proof matches the registered place of business.",
+      "message_hi": "पते का प्रमाण पंजीकृत पते से मेल खाता है।"
+    },
+    {
+      "code": "SIGNATORY_NOT_AUTHORISED",
+      "status": "PASS",
+      "evidence": "id=Anita Shah; record=Anita Shah (our records)",
+      "message_en": "The signatory matches the person of record for this business.",
+      "message_hi": "हस्ताक्षरकर्ता रिकॉर्ड से मेल खाता है।"
+    },
+    {
+      "code": "ADDRESS_PROOF_STALE",
+      "status": "PASS",
+      "evidence": "2026-06-11 (34 days)",
+      "message_en": "Address proof is 34 days old.",
+      "message_hi": "पते का प्रमाण 34 दिन पुराना है।"
+    }
+  ],
+  "masked": {
+    "gstin": "32XXXXXXXXXX1Z1"
+  },
+  "next_step_en": "Fix the 1 issue above and upload again, or tap 'Talk to a human' and we will call you.",
+  "next_step_hi": "ऊपर बताई 1 समस्या ठीक करके दोबारा अपलोड करें, या 'किसी व्यक्ति से बात करें' दबाएँ।"
+}
