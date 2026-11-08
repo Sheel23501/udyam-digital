@@ -61,9 +61,11 @@ def record(session_id: str, purposes: list[str], language: str, notice_version: 
             "notice_version": notice_version, "language": language}
 
 
-def withdraw(consent_id: int) -> dict | None:
+def withdraw(consent_id: int, session_id: str | None = None) -> dict | None:
     con = connect()
     row = con.execute("SELECT id, session_id, withdrawn_ts FROM consents WHERE id = ?", (consent_id,)).fetchone()
+    if row and session_id is not None and row["session_id"] != session_id:
+        return None                                           # not this session's consent
     if not row:
         return None
     ts = row["withdrawn_ts"] or now_iso()

@@ -134,16 +134,16 @@ def _call(method: str, path: str, **kw):
         raise ApiError(0, f"cannot reach the backend at {BASE}: {e.__class__.__name__}") from e
 
 
-def get(path: str, **params):
-    return _call("get", path, params=params or None)
+def get(path: str, headers: dict | None = None, **params):
+    return _call("get", path, params=params or None, headers=headers)
 
 
-def post(path: str, json=None, data=None, files=None):
-    return _call("post", path, json=json, data=data, files=files)
+def post(path: str, json=None, data=None, files=None, headers: dict | None = None):
+    return _call("post", path, json=json, data=data, files=files, headers=headers)
 
 
-def delete(path: str):
-    return _call("delete", path)
+def delete(path: str, headers: dict | None = None):
+    return _call("delete", path, headers=headers)
 
 
 def health() -> dict | None:

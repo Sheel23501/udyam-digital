@@ -24,7 +24,14 @@ def run_images(applicant: str, files: dict[str, str], udyam_only_path: bool = Fa
     for doc_type, path in files.items():
         if doc_type not in DOC_TYPES:
             continue
-        flag, _ = gate(path, doc_type)
+        try:
+            flag, _ = gate(path, doc_type)
+        except ValueError:                                   # not decodable as an image
+            flags.append(CheckResult(
+                code="IMAGE_UNREADABLE", status="REVIEW", evidence=doc_type,
+                message_en=f"We could not open the {doc_type.replace('_', ' ')} photo. Please upload a clear PNG or JPG photo.",
+                message_hi="दस्तावेज़ की फ़ोटो खुल नहीं सकी। कृपया साफ़ PNG या JPG फ़ोटो दें।"))
+            continue
         if flag:
             flags.append(flag)
             continue                                   # do not spend an extraction call on an unreadable photo

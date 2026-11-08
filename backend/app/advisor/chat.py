@@ -250,6 +250,9 @@ def _offline_reply(st: State, err: Exception) -> str:
     text = st.user_turns[-1] if st.user_turns else ""
     pending_field = st.pending if st.pending in ASK_MISSING["en"] else None
     facts = read_facts(text, pending_field, city_tiers(), list(business_type_segments()))
+    guess = facts.pop("_city_guess", None)
+    if guess and not st.profile.city and "city" not in facts:
+        facts["city"] = guess                                 # "in Noida": only when no city is known yet
     if st.profile.business_type:
         facts.pop("business_type", None)                      # never replace "sari shop" with a generic "shop"
     if "num_sites" not in facts and st.profile.num_sites and ANOTHER_SITE.search(text):

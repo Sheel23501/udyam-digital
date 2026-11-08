@@ -133,7 +133,7 @@ def recommend(prof: Profile, line_for_addons: bool = False) -> Bundle:
     missing are excluded rather than forcing a line; line_for_addons=True (owner agreed) lets the engine add just the
     cheapest eligible line those add-ons need, still without a default line or SIMs."""
     cat = catalogue()
-    if prof.city_tier not in (1, 2):
+    if prof.city or prof.city_tier not in (1, 2):
         prof.city_tier = tier_for_city(prof.city)
     seg = infer_segment(prof)
     emp = max(1, prof.employee_count or 1)
@@ -181,7 +181,7 @@ def recommend(prof: Profile, line_for_addons: bool = False) -> Bundle:
 def validate(items: dict[str, int], prof: Profile) -> ValidationResult:
     """Re-check a (possibly user-edited) bundle. Used by the quote screen on every toggle."""
     cat = catalogue()
-    if prof.city_tier not in (1, 2):
+    if prof.city or prof.city_tier not in (1, 2):
         prof.city_tier = tier_for_city(prof.city)
     violations: list[Exclusion] = []
     known = {p: q for p, q in items.items() if p in cat and q > 0}

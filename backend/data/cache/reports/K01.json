@@ -12,7 +12,7 @@
     {
       "code": "GSTIN_CHECKSUM",
       "status": "PASS",
-      "evidence": "37IHKXV5167L1ZS",
+      "evidence": "37XXXXXXXXXX1ZS",
       "message_en": "GSTIN format and check digit are valid.",
       "message_hi": "GSTIN का प्रारूप सही है।"
     },
@@ -61,7 +61,7 @@
     {
       "code": "SIGNATORY_NOT_AUTHORISED",
       "status": "PASS",
-      "evidence": "id=Neha Kaur; record=Neha Kaur (the GST certificate)",
+      "evidence": "id=Neha K.; record=Neha K. (the GST certificate)",
       "message_en": "The signatory matches the person of record for this business.",
       "message_hi": "हस्ताक्षरकर्ता रिकॉर्ड से मेल खाता है।"
     },

@@ -54,7 +54,8 @@ def recommendation(rec: dict, notes_detail: list[str] | None = None) -> None:
         rows = "".join(_item_row(b["name"], b["qty"], b.get("unit", ""), b.get("price_from_per_unit")) for b in rec["bundle"])
         st.markdown(rows, unsafe_allow_html=True)
         st.caption(f"{t('setup')} ₹{rec['setup_one_time']:,} · {t('contract', n=rec['contract_months'])} · {t('install', n=rec['install_days'])}")
-        for n in rec.get("notes") or []:
+        notes = (rec.get("notes_hi") if lang() == "hi" else None) or rec.get("notes") or []
+        for n in notes:
             st.info(f"{t('added_because')}: {n}", icon="➕")
         if rec.get("excluded"):
             with st.expander(t("left_out")):

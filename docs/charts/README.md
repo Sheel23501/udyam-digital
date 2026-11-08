@@ -1,7 +1,7 @@
 # Charts for the deck
 
 Generated from `backend/data/smb_leads.csv` by `backend/scripts/make_charts.py` (5,000 leads, 2026-04-01 to 2026-06-30).
-Every number below is in `numbers.json`; regenerate with `python scripts/make_charts.py` from `backend/`.
+Every number below is in `numbers.json`; regenerate with `python scripts/make_charts.py` from `backend/` (needs `pip install matplotlib`, used only by the chart scripts).
 
 | Chart | Headline | Use on slide |
 |---|---|---|

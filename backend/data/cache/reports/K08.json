@@ -12,7 +12,7 @@
     {
       "code": "GSTIN_CHECKSUM",
       "status": "PASS",
-      "evidence": "24XORXG9365M1Z3",
+      "evidence": "24XXXXXXXXXX1Z3",
       "message_en": "GSTIN format and check digit are valid.",
       "message_hi": "GSTIN का प्रारूप सही है।"
     },
@@ -61,7 +61,7 @@
     {
       "code": "SIGNATORY_NOT_AUTHORISED",
       "status": "PASS",
-      "evidence": "id=Joseph Rao; record=Joseph Rao (the GST certificate)",
+      "evidence": "id=Joseph R.; record=Joseph R. (the GST certificate)",
       "message_en": "The signatory matches the person of record for this business.",
       "message_hi": "हस्ताक्षरकर्ता रिकॉर्ड से मेल खाता है।"
     },

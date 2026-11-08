@@ -199,7 +199,10 @@ def test_quantity_override_changes_price_only_for_items_in_bundle():
     r = dispatch("update_profile", {"quantities": {"P23": 50, "P21": 3}}, st)
     rec = r["recommendation"]
     assert rec["quantities_overridden"] == {"P23": 50}
-    assert rec["monthly_from"] == st.recommendation.monthly_min - 2 * 199 + 50 * 199
+    # the override is part of the stored bundle now, so the card, explanation and order all agree
+    assert {i.product_id: i.qty for i in st.recommendation.items}["P23"] == 50
+    assert rec["monthly_from"] == st.recommendation.monthly_min == 999 + 2 * 299 + 50 * 199
+    assert "× 50" in explain(st.recommendation, "en")
 
 
 def test_recommend_line_for_addons_flag_is_backwards_compatible():

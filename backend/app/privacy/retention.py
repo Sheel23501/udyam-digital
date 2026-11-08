@@ -70,6 +70,27 @@ def erase_session(session_id: str, upload_dir: Path | None = None) -> dict:
     if root.exists():
         shutil.rmtree(root, ignore_errors=True)
     con = connect()
-    con.execute("UPDATE sessions SET history_json = NULL, profile_json = NULL, status = 'erased' WHERE id = ?", (session_id,))
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    con.execute("UPDATE sessions SET history_json = NULL, profile_json = NULL, recommendation_json = NULL, status = 'erased' WHERE id = ?",
+                (session_id,))
+    con.execute("UPDATE consents SET withdrawn_ts = ? WHERE session_id = ? AND withdrawn_ts IS NULL", (now, session_id))
     con.commit()
-    return {"session_id": session_id[:6] + "…", "images_deleted": files, "transcript_deleted": True, "kyc_record_kept": True}
+    from ..advisor import sessions                            # noqa: PLC0415 — avoid an import cycle at module load
+    sessions._STATES.pop(session_id, None)
+    return {"session_id": session_id[:6] + "…", "images_deleted": files, "transcript_deleted": True, "consent_withdrawn": True,
+            "kyc_record_kept": True}
+
+
+def after_withdrawal(session_id: str, upload_dir: Path | None = None) -> dict:
+    """Consent withdrawn: stop processing and delete what the law does not require (uploaded images, chat transcript).
+    The profile needed to honour an existing order and the regulatory KYC record stay."""
+    root = Path(upload_dir or config.UPLOAD_DIR) / session_id
+    files = _folder_size(root)[0] if root.exists() else 0
+    if root.exists():
+        shutil.rmtree(root, ignore_errors=True)
+    con = connect()
+    con.execute("UPDATE sessions SET history_json = NULL WHERE id = ?", (session_id,))
+    con.commit()
+    from ..advisor import sessions                            # noqa: PLC0415
+    sessions._STATES.pop(session_id, None)
+    return {"images_deleted": files, "transcript_deleted": True}

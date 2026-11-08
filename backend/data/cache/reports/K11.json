@@ -12,7 +12,7 @@
     {
       "code": "GSTIN_CHECKSUM",
       "status": "PASS",
-      "evidence": "03KGZXT1320R1ZZ",
+      "evidence": "03XXXXXXXXXX1ZZ",
       "message_en": "GSTIN format and check digit are valid.",
       "message_hi": "GSTIN का प्रारूप सही है।"
     },
@@ -61,7 +61,7 @@
     {
       "code": "SIGNATORY_NOT_AUTHORISED",
       "status": "PASS",
-      "evidence": "id=Vikram Pillai; record=Vikram Pillai (our records)",
+      "evidence": "id=Vikram P.; record=Vikram P. (our records)",
       "message_en": "The signatory matches the person of record for this business.",
       "message_hi": "हस्ताक्षरकर्ता रिकॉर्ड से मेल खाता है।"
     },

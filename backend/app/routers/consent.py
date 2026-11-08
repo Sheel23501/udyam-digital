@@ -1,9 +1,9 @@
 """DPDP consent endpoints. KYC upload and run refuse (403) without an active consent for the session."""
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Path, Query
 from pydantic import BaseModel, Field
 
 from ..advisor import sessions
-from ..privacy import audit, consent
+from ..privacy import audit, consent, retention
 
 router = APIRouter(tags=["consent"])
 
@@ -22,8 +22,11 @@ def notice(lang: str = Query("en", pattern="^(en|hi|hinglish)$")) -> dict:
 
 @router.post("/consent", status_code=201)
 def give_consent(body: ConsentIn) -> dict:
-    if not sessions.exists(body.session_id):
+    s = sessions.get(body.session_id)
+    if not s:
         raise HTTPException(404, "unknown session")
+    if s["status"] == "erased":
+        raise HTTPException(410, "this session's data was erased at the owner's request")
     missing = consent.missing_required(body.purposes)
     if missing:
         raise HTTPException(400, {"message": "required purposes missing", "missing": missing})
@@ -45,19 +48,25 @@ def consent_status(session_id: str) -> dict:
     return {"session_id": session_id, "active": consent.active_for(session_id), "history": consent.history(session_id)}
 
 
-@router.delete("/consent/{consent_id}")
-def withdraw(consent_id: int) -> dict:
-    rec = consent.withdraw(consent_id)
+@router.delete("/consent/{session_id}/{consent_id}")
+def withdraw(session_id: str, consent_id: int = Path(..., ge=1, le=2**62)) -> dict:
+    """Withdraw a consent. The session id proves ownership (consent ids alone are sequential). Withdrawal stops
+    processing and deletes the uploaded images and the chat transcript; the regulatory KYC record stays."""
+    rec = consent.withdraw(consent_id, session_id)
     if not rec:
-        raise HTTPException(404, "unknown consent")
-    audit.log("owner", "consent.withdrawn", rec["session_id"])
+        raise HTTPException(404, "unknown consent for this session")
+    rec["cleanup"] = retention.after_withdrawal(session_id)
+    audit.log("owner", "consent.withdrawn", session_id)
     return rec
 
 
 def require_consent(session_id: str) -> dict:
     """Shared gate for the KYC endpoints."""
-    if not sessions.exists(session_id):
+    s = sessions.get(session_id)
+    if not s:
         raise HTTPException(404, "unknown session")
+    if s["status"] == "erased":
+        raise HTTPException(410, "this session's data was erased at the owner's request")
     active = consent.active_for(session_id)
     if not active:
         raise HTTPException(403, {"message": "consent required before any document is processed",

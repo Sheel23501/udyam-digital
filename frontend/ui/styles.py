@@ -8,7 +8,8 @@ html, body, [class*="css"], .stMarkdown, .stChatMessage, button, input, textarea
   font-family: Inter, 'Noto Sans Devanagari', sans-serif;
 }
 .block-container { max-width: 440px; padding-top: 0.6rem; padding-bottom: 5rem; }
-#MainMenu, footer, header[data-testid="stHeader"] { visibility: hidden; height: 0; }
+#MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"], [data-testid="stStatusWidget"] { visibility: hidden; }
+header[data-testid="stHeader"] { background: transparent; }
 [data-testid="stChatMessage"] { border-radius: 16px; padding: 0.5rem 0.75rem; }
 .brand { display:flex; align-items:center; gap:8px; margin-bottom:0.25rem; }
 .brand .logo { width:30px; height:30px; border-radius:8px; background:#E40046; color:#fff; font-weight:700;

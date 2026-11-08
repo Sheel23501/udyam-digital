@@ -30,10 +30,10 @@ class Segment(str, Enum):
 class Profile(BaseModel):
     business_type: str | None = None
     segment: Segment | None = None       # inferred from business_type / size if not given
-    employee_count: int | None = None
-    num_sites: int | None = None
+    employee_count: int | None = Field(None, ge=1, le=100000)
+    num_sites: int | None = Field(None, ge=1, le=10000)
     city: str | None = None
-    city_tier: int | None = None         # derived from city when missing; unknown city -> tier 2
+    city_tier: int | None = Field(None, ge=1, le=2)   # derived from the city whenever a city is given; unknown city -> tier 2
     has_gstin: bool | None = None
     gstin: str | None = None
     gstin_status: str | None = None      # Active | Cancelled | Suspended | None (= not verified yet)

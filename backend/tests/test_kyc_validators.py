@@ -73,7 +73,8 @@ def test_k06_report_surfaces_tampering_evidence():
     fields = json.loads((HERE / "kyc_fields" / "K06.json").read_text(encoding="utf-8"))
     report = evaluate_fields("K06", fields)
     nir = next(c for c in report.checks if c.code == "GSTIN_NOT_IN_REGISTRY")
-    assert "08YKZXS5189L1ZO" in nir.evidence and "altered" in nir.message_en
+    assert "08XXXXXXXXXX1ZO" in nir.evidence and "altered" in nir.message_en          # the real GSTIN is named, masked
+    assert "08YKZXS5189L1ZO" not in nir.evidence + nir.message_en + nir.message_hi
 
 
 def test_k11_message_names_the_cutoff_date():
@@ -85,4 +86,31 @@ def test_k11_message_names_the_cutoff_date():
 def test_k10_names_both_people():
     fields = json.loads((HERE / "kyc_fields" / "K10.json").read_text(encoding="utf-8"))
     sig = next(c for c in evaluate_fields("K10", fields).checks if c.code == "SIGNATORY_NOT_AUTHORISED")
-    assert "Nisha Arora" in sig.message_en and "Fatima Menon" in sig.message_en
+    assert "Nisha A." in sig.message_en and "Fatima M." in sig.message_en                # both people named, masked
+    assert "Arora" not in sig.message_en + sig.evidence and "Menon" not in sig.message_hi + sig.evidence
+
+
+def test_no_raw_identifier_or_full_name_leaves_any_sample_report():
+    import re
+    raw_gstin = re.compile(r"\b\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]\b")
+    for f in sorted((HERE / "kyc_fields").glob("K*.json")):
+        fields = json.loads(f.read_text(encoding="utf-8"))
+        rep = evaluate_fields(f.stem, fields)
+        text = " ".join(c.evidence + " " + c.message_en + " " + c.message_hi for c in rep.checks)
+        assert not raw_gstin.search(text), (f.stem, raw_gstin.search(text).group())
+        sig = (fields.get("signatory_id") or {}).get("name")
+        if sig and sig != "UNREADABLE" and len(sig.split()) > 1:
+            assert sig not in text, (f.stem, sig)
+
+
+def test_udyam_only_path_checks_documents_against_each_other():
+    from app.kyc.schemas import ElectricityBill, SignatoryId, UdyamCertificate
+    from app.kyc.pipeline import evaluate
+    k03 = json.loads((HERE / "kyc_fields" / "K03.json").read_text(encoding="utf-8"))
+    udyam = UdyamCertificate(**k03["udyam_certificate"])
+    good = evaluate("U1", None, udyam, SignatoryId(**k03["signatory_id"]), ElectricityBill(**k03["address_proof"]), udyam_only_path=True)
+    other = json.loads((HERE / "kyc_fields" / "K09.json").read_text(encoding="utf-8"))
+    mixed = evaluate("U2", None, udyam, SignatoryId(**other["signatory_id"]), ElectricityBill(**other["address_proof"]), udyam_only_path=True)
+    assert mixed.verdict == "FAIL", [(c.code, c.status) for c in mixed.checks]
+    assert {"NAME_MISMATCH", "SIGNATORY_NOT_AUTHORISED"} & {c.code for c in mixed.checks if c.status == "FAIL"}
+    assert good.verdict in ("PASS", "REVIEW"), [(c.code, c.status, c.evidence) for c in good.checks]

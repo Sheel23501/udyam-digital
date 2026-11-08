@@ -12,14 +12,14 @@
     {
       "code": "GSTIN_CHECKSUM",
       "status": "FAIL",
-      "evidence": "08YKZXS8189L1Z0",
+      "evidence": "08XXXXXXXXXX1Z0",
       "message_en": "The GSTIN on the certificate does not pass its check digit. Please upload the original certificate.",
       "message_hi": "GSTIN का चेक अंक मेल नहीं खाता। कृपया असली प्रमाणपत्र अपलोड करें।"
     },
     {
       "code": "GSTIN_NOT_IN_REGISTRY",
       "status": "FAIL",
-      "evidence": "near_match=['08YKZXS5189L1ZO']",
+      "evidence": "near_match=['08XXXXXXXXXX1ZO']",
       "message_en": "This GSTIN was not found in the GST registry. A registration with a very similar number exists for this business name, so the certificate may have been altered.",
       "message_hi": "यह GSTIN रजिस्ट्री में नहीं मिला। इसी नाम से मिलती-जुलती संख्या मौजूद है — प्रमाणपत्र बदला गया हो सकता है।"
     },
@@ -40,7 +40,7 @@
     {
       "code": "SIGNATORY_NOT_AUTHORISED",
       "status": "PASS",
-      "evidence": "id=Pooja Shah; record=Pooja Shah (the GST certificate)",
+      "evidence": "id=Pooja S.; record=Pooja S. (the GST certificate)",
       "message_en": "The signatory matches the person of record for this business.",
       "message_hi": "हस्ताक्षरकर्ता रिकॉर्ड से मेल खाता है।"
     },

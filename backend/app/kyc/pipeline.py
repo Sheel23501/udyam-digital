@@ -1,7 +1,10 @@
 """KYC evaluation over extracted document fields (text level). Phase 4 adds image gates + Gemini extraction on top
 and calls `evaluate()` with the results; tests call it directly with fixtures."""
 from .normalise import normalise_gstin, normalise_udyam
-from .report import mask_gstin, mask_udyam, next_step, verdict
+import re
+
+from ..privacy.masking import mask_text
+from .report import mask_gstin, mask_name, mask_udyam, next_step, verdict
 from .schemas import CheckResult, ElectricityBill, GstCertificate, KycReport, SignatoryId, UdyamCertificate
 from . import validators as V
 
@@ -65,12 +68,51 @@ def evaluate(
         if sig is not None:
             checks += V.check_signatory(sig, gst, reg, udyam.udyam_number if udyam else None, gstin_usable)
 
+    if gst is None and udyam is not None and udyam_only_path:
+        checks.append(V.check_names_udyam(udyam, bill, sig))
+        city = V.check_city_udyam(udyam, bill)
+        if city:
+            checks.append(city)
+        if sig is not None:                                   # person of record from our records via the Udyam number
+            anchor = GstCertificate(header_text="", gstin="", legal_name=udyam.enterprise_name, trade_name=udyam.enterprise_name,
+                                    constitution="", principal_address="", state=udyam.state, date_of_liability="", gstin_confidence=1.0)
+            checks += V.check_signatory(sig, anchor, None, udyam.udyam_number, gstin_usable=False)
+
     if bill is not None:
         checks.append(V.check_address_recency(bill))
 
+    checks = _mask_checks(checks, _person_names(gst, sig, reg, udyam))
     v = verdict(checks)
     en, hi = next_step(v, checks)
     return KycReport(applicant=applicant, verdict=v, checks=checks, masked=masked, next_step_en=en, next_step_hi=hi)
+
+
+def _person_names(gst, sig, reg, udyam) -> set[str]:
+    """Full names of people that can appear in check evidence or messages (signatory, proprietor, person of record)."""
+    names: set[str] = set()
+    if sig is not None and sig.name and sig.name != "UNREADABLE":
+        names.add(sig.name.strip())
+    for legal in ((gst.legal_name if gst is not None else None), (reg or {}).get("legal_name")):
+        person, _ = V.proprietor(legal or "")
+        if person:
+            names.add(person.strip())
+    lead = V.lead_contact_for(gstin=gst.gstin if gst is not None else None, udyam=udyam.udyam_number if udyam is not None else None)
+    if lead and lead.get("contact_name"):
+        names.add(lead["contact_name"].strip())
+    return {n for n in names if len(n) >= 3}
+
+
+def _mask_checks(checks: list[CheckResult], names: set[str]) -> list[CheckResult]:
+    """Evidence and messages leave the pipeline with GSTINs, Udyam numbers, phones and people's names masked."""
+    ordered = sorted(names, key=len, reverse=True)
+
+    def scrub(text: str) -> str:
+        text = mask_text(text or "")
+        for n in ordered:
+            text = re.sub(re.escape(n), mask_name(n), text, flags=re.I)
+        return text
+    return [c.model_copy(update={"evidence": scrub(c.evidence), "message_en": scrub(c.message_en), "message_hi": scrub(c.message_hi)})
+            for c in checks]
 
 
 def evaluate_fields(applicant: str, fields: dict) -> KycReport:

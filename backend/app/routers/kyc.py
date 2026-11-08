@@ -1,10 +1,13 @@
 """Smart KYC: upload documents, run the checks (own uploads or a sample applicant), fetch a report."""
 import glob
+import io
 import json
+import logging
 import uuid
 from pathlib import Path
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from PIL import Image
 from pydantic import BaseModel, Field
 
 from .. import config
@@ -26,7 +29,6 @@ class RunIn(BaseModel):
     session_id: str = Field(..., description="a session with an active consent (403 otherwise)")
     sample_applicant: str | None = Field(None, description="K01..K12 to run one of the provided sample packs instead of this session's uploads")
     udyam_only: bool = Field(False, description="owner has no GST: verify on the Udyam path")
-    use_cache: bool = True
 
 
 def sample_files(applicant: str) -> dict[str, str]:
@@ -67,6 +69,11 @@ async def upload(session_id: str = Form(...), doc_type: str = Form(...), file: U
         raise HTTPException(413, "file larger than 8 MB")
     if not data:
         raise HTTPException(400, "empty file")
+    try:
+        with Image.open(io.BytesIO(data)) as im:
+            im.verify()
+    except Exception:  # noqa: BLE001 — anything PIL cannot read is not a photo of a document
+        raise HTTPException(400, {"message": "this file is not a readable PNG or JPG photo"}) from None
     folder = Path(config.UPLOAD_DIR) / session_id
     folder.mkdir(parents=True, exist_ok=True)
     for old in folder.glob(f"{doc_type}.*"):
@@ -89,12 +96,15 @@ def run(body: RunIn) -> dict:
     else:
         applicant = f"S-{body.session_id[:6]}"
         files = session_files(body.session_id)
+        if body.udyam_only:
+            files.pop("gst_certificate", None)                # the owner chose the no-GST path: ignore an earlier GST upload
         if not files:
             raise HTTPException(400, {"message": "no documents uploaded for this session", "upload": "POST /kyc/upload", "doc_types": list(DOC_TYPES)})
     try:
-        report = run_images(applicant, files, udyam_only_path=body.udyam_only, use_cache=body.use_cache)
+        report = run_images(applicant, files, udyam_only_path=body.udyam_only, use_cache=True)
     except Exception as e:  # noqa: BLE001 — the vision API can be out of quota; say so instead of a 500
-        raise HTTPException(503, {"message": "document reading service unavailable, please retry in a minute", "error": str(e)[:200]}) from e
+        logging.getLogger(__name__).warning("kyc run failed: %s", type(e).__name__)
+        raise HTTPException(503, {"message": "document reading service unavailable, please retry in a minute"}) from None
     app_id = "KYC-" + uuid.uuid4().hex[:8].upper()
     con = connect()
     con.execute("INSERT INTO kyc_applications(id, session_id, applicant, verdict, report_json, ts) VALUES (?,?,?,?,?,?)",

@@ -1,5 +1,7 @@
 """Direct access to the rules engine, for the quote screen and for judges' own scenarios."""
 from fastapi import APIRouter
+from typing import Annotated
+
 from pydantic import BaseModel, Field
 
 from ..advisor.explain import explain
@@ -14,7 +16,7 @@ router = APIRouter(tags=["engine"])
 
 class ValidateIn(BaseModel):
     profile: Profile
-    items: dict[str, int] = Field(..., description="{product_id: qty}; the owner's edited bundle")
+    items: dict[str, Annotated[int, Field(ge=0, le=10000)]] = Field(..., description="{product_id: qty}; the owner's edited bundle")
 
 
 @router.get("/catalogue")

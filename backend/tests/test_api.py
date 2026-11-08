@@ -13,6 +13,10 @@ from app.data.loader import connect
 from app.main import app
 from app.privacy import retention
 
+import os
+
+os.environ.setdefault("STAFF_PIN", "test-pin-4821")
+STAFF = {"X-Staff-Pin": os.environ["STAFF_PIN"]}
 client = TestClient(app)
 DOCS = Path(config.DATA_DIR) / "kyc_documents"
 ALL_REQUIRED = ["identity_verification", "service_provisioning", "regulatory_kyc_record", "service_updates"]
@@ -127,7 +131,7 @@ def test_consent_requires_all_required_purposes_and_can_be_withdrawn():
     status = client.get(f"/consent/{sid}").json()
     assert status["active"]["consent_id"] == cid and "marketing" in status["active"]["purposes"]
     assert client.get(f"/sessions/{sid}").json()["status"] == "consented"
-    assert client.delete(f"/consent/{cid}").status_code == 200
+    assert client.delete(f"/consent/{sid}/{cid}").status_code == 200
     assert client.get(f"/consent/{sid}").json()["active"] is None
 
 
@@ -203,9 +207,9 @@ def test_lookup_masks_identifiers_and_audits():
     assert client.get("/lookup/gstin/not-a-gstin").status_code == 400
     bad = client.get("/lookup/gstin/32HJJXE5083Y1ZX").json()
     assert bad["found"] is False and bad["checksum_ok"] is False
-    last = client.get("/backoffice/audit?limit=5").json()
+    last = client.get("/backoffice/audit?limit=5", headers=STAFF).json()
     assert any(a["action"] == "lookup.gstin" and "32XXXXXXXXXX1ZR" in a["subject_masked"] for a in last)
-    assert not any("32HJJXE5083Y1ZR" in (a["subject_masked"] or "") for a in client.get("/backoffice/audit?limit=200").json())
+    assert not any("32HJJXE5083Y1ZR" in (a["subject_masked"] or "") for a in client.get("/backoffice/audit?limit=200", headers=STAFF).json())
 
 
 def test_lookup_udyam():
@@ -238,6 +242,9 @@ def test_order_requires_kyc_pass_then_tracks_stages():
     sid = new_session()
     chat(sid, "Pharmacy in Noida, 3 staff, one shop, GST registered, I want CCTV cameras")
     r = client.post("/orders", json={"session_id": sid})
+    assert r.status_code == 403 and "consent" in r.json()["detail"]["message"]        # no consent yet
+    consent_for(sid)
+    r = client.post("/orders", json={"session_id": sid})
     assert r.status_code == 409 and "KYC" in r.json()["detail"]["message"]
     sid = _session_with_quote_and_pass_kyc()
     r = client.post("/orders", json={"session_id": sid})
@@ -268,16 +275,16 @@ def test_backoffice_queue_mixes_sessions_and_sample_leads_with_scores():
     chat(sid, "मेरी साड़ी की दुकान है दिल्ली में")
     r = client.post("/backoffice/handoff", json={"session_id": sid, "reason": "wants to talk to a person"})
     assert r.status_code == 201
-    rows = client.get("/backoffice/leads?limit=300").json()
+    rows = client.get("/backoffice/leads?limit=300", headers=STAFF).json()
     mine = next(x for x in rows if x["id"] == sid)
     assert mine["source"] == "session" and mine["last_step"] == "handoff" and mine["partner"] == "P-77" and mine["score"] >= 0.6
     sample = [x for x in rows if x["source"] == "lead"]
     assert sample and all(0 <= x["score"] <= 1 and x["suggested_action"] and x["est_monthly_value"] >= 0 for x in sample)
     assert rows == sorted(rows, key=lambda x: (-x["score"], -x["est_monthly_value"]))
-    d = client.get(f"/backoffice/leads/{sample[0]['id']}/score").json()
+    d = client.get(f"/backoffice/leads/{sample[0]['id']}/score", headers=STAFF).json()
     assert d["score"] == sample[0]["score"] and 3 <= len(d["reasons"]) <= 4
-    assert client.get(f"/backoffice/leads/{sid}/score").json()["suggested_action"].startswith("Owner asked")
-    assert client.get("/backoffice/leads/L99999/score").status_code == 404
+    assert client.get(f"/backoffice/leads/{sid}/score", headers=STAFF).json()["suggested_action"].startswith("Owner asked")
+    assert client.get("/backoffice/leads/L99999/score", headers=STAFF).status_code == 404
 
 
 def test_scoring_prefers_recoverable_drops():
@@ -310,12 +317,12 @@ def test_retention_purges_old_rejected_uploads_but_keeps_recent_and_verified():
         else:
             con.execute("UPDATE sessions SET created = ? WHERE id = ?", (old, sid))
     con.commit()
-    r = client.post("/admin/retention/run", json={})
+    r = client.post("/admin/retention/run", json={}, headers=STAFF)
     assert r.status_code == 200
     removed = {x["session_id"] for x in r.json()["removed"]}
     assert sids["old_fail"][:6] + "…" in removed and sids["no_app"][:6] + "…" in removed
     assert not (root / sids["old_fail"]).exists() and (root / sids["fresh_fail"]).exists() and (root / sids["old_pass"]).exists()
-    r = client.post("/admin/retention/run", json={"verified_days": 30})
+    r = client.post("/admin/retention/run", json={"verified_days": 30}, headers=STAFF)
     assert not (root / sids["old_pass"]).exists()
 
 
@@ -326,7 +333,7 @@ def test_erasure_deletes_images_and_transcript_keeps_kyc_record():
     (Path(config.UPLOAD_DIR) / sid).mkdir(parents=True)
     (Path(config.UPLOAD_DIR) / sid / "address_proof.jpg").write_bytes(b"img")
     rep = client.post("/kyc/run", json={"session_id": sid, "sample_applicant": "K03"}).json()
-    r = client.post(f"/admin/erase/{sid}")
+    r = client.post(f"/admin/erase/{sid}", headers=STAFF)
     assert r.status_code == 200 and r.json()["images_deleted"] == 1 and r.json()["kyc_record_kept"]
     assert not (Path(config.UPLOAD_DIR) / sid).exists()
     s = client.get(f"/sessions/{sid}").json()
@@ -336,7 +343,95 @@ def test_erasure_deletes_images_and_transcript_keeps_kyc_record():
 
 
 def test_audit_log_never_contains_raw_identifiers():
-    rows = client.get("/backoffice/audit?limit=500").json()
+    rows = client.get("/backoffice/audit?limit=500", headers=STAFF).json()
     import re
     raw_gstin = re.compile(r"\b\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]\b")
     assert rows and not any(raw_gstin.search(r["subject_masked"] or "") for r in rows)
+
+
+
+# ---------- audit findings (fixed) ----------
+def test_backoffice_and_admin_need_the_staff_pin():
+    sid = new_session()
+    for method, path in (("get", "/backoffice/leads"), ("get", "/backoffice/audit"), ("get", "/backoffice/leads/L00001/score"),
+                         ("post", "/admin/retention/run"), ("post", f"/admin/erase/{sid}")):
+        r = getattr(client, method)(path, **({"json": {}} if method == "post" and "retention" in path else {}))
+        assert r.status_code == 401, (path, r.status_code)
+        r = getattr(client, method)(path, headers={"X-Staff-Pin": "wrong"}, **({"json": {}} if "retention" in path else {}))
+        assert r.status_code == 401, (path, r.status_code)
+    assert client.get("/backoffice/leads?limit=1", headers=STAFF).status_code == 200
+
+
+def test_backoffice_locked_when_no_staff_pin_is_configured(monkeypatch):
+    monkeypatch.delenv("STAFF_PIN", raising=False)
+    assert client.get("/backoffice/leads", headers={"X-Staff-Pin": ""}).status_code == 403
+
+
+def test_consent_can_only_be_withdrawn_by_its_own_session():
+    a, b = new_session(), new_session()
+    ca, cb = consent_for(a), consent_for(b)
+    assert client.delete(f"/consent/{a}/{cb}").status_code == 404                     # a cannot withdraw b's consent
+    assert client.get(f"/consent/{b}").json()["active"] is not None
+    assert client.delete(f"/consent/{a}/{2**63}").status_code == 422                  # out of range: validation, not a 500
+
+
+def test_withdrawal_stops_orders_and_deletes_images_and_transcript():
+    sid = _session_with_quote_and_pass_kyc()
+    (Path(config.UPLOAD_DIR) / sid).mkdir(parents=True, exist_ok=True)
+    (Path(config.UPLOAD_DIR) / sid / "gst_certificate.png").write_bytes(b"img")
+    cid = client.get(f"/consent/{sid}").json()["active"]["consent_id"]
+    r = client.delete(f"/consent/{sid}/{cid}")
+    assert r.status_code == 200 and r.json()["cleanup"]["images_deleted"] == 1
+    assert not (Path(config.UPLOAD_DIR) / sid).exists()
+    assert client.post("/orders", json={"session_id": sid}).status_code == 403
+    raw = connect().execute("SELECT history_json FROM sessions WHERE id = ?", (sid,)).fetchone()[0]
+    assert raw is None
+
+
+def test_erasure_is_final():
+    sid = new_session()
+    chat(sid, "I run a kirana shop in Lucknow, 2 people, one shop, no GST, customers order on WhatsApp")
+    consent_for(sid)
+    assert client.post(f"/admin/erase/{sid}", headers=STAFF).status_code == 200
+    png = (DOCS / "K03_gst_certificate.png").read_bytes()
+    assert client.post("/kyc/upload", data={"session_id": sid, "doc_type": "gst_certificate"},
+                       files={"file": ("g.png", io.BytesIO(png), "image/png")}).status_code == 410
+    assert client.post("/kyc/run", json={"session_id": sid, "sample_applicant": "K03"}).status_code == 410
+    assert client.post("/consent", json={"session_id": sid, "purposes": ALL_REQUIRED}).status_code == 410
+    assert client.post("/backoffice/handoff", json={"session_id": sid}).status_code == 410
+    assert client.post("/advisor/chat", json={"session_id": sid, "text": "hello"}).status_code == 410
+    row = connect().execute("SELECT status, history_json, profile_json FROM sessions WHERE id = ?", (sid,)).fetchone()
+    assert tuple(row) == ("erased", None, None)
+
+
+def test_kyc_after_order_does_not_reopen_the_session():
+    sid = _session_with_quote_and_pass_kyc()
+    assert client.post("/orders", json={"session_id": sid}).status_code == 201
+    client.post("/kyc/run", json={"session_id": sid, "sample_applicant": "K11"})
+    assert client.get(f"/sessions/{sid}").json()["status"] == "ordered"
+
+
+def test_bad_uploads_are_rejected_cleanly():
+    sid = new_session()
+    consent_for(sid)
+    r = client.post("/kyc/upload", data={"session_id": sid, "doc_type": "gst_certificate"},
+                    files={"file": ("x.png", io.BytesIO(b"this is not an image"), "image/png")})
+    assert r.status_code == 400 and "readable" in r.text
+    r = client.post("/kyc/run", json={"session_id": sid, "use_cache": False, "sample_applicant": "K03"})
+    assert r.status_code == 200                                                        # use_cache is ignored, never a paid call
+
+
+def test_chat_and_session_never_return_a_raw_gstin():
+    sid = new_session()
+    out = chat(sid, "Coaching centre in Kochi, 6 staff, one centre. Our GSTIN is 32HJJXE5083Y1ZR.")
+    assert out["profile"]["gstin"] == "32XXXXXXXXXX1ZR"
+    assert "32HJJXE5083Y1ZR" not in json.dumps(client.get(f"/sessions/{sid}").json())
+
+
+def test_engine_rejects_impossible_profiles_and_quantities():
+    assert client.post("/engine/recommend", json={"employee_count": -5}).status_code == 422
+    r = client.post("/engine/recommend", json={"business_type": "Clinic", "employee_count": 8, "num_sites": 1, "city": "Nagpur",
+                                               "city_tier": 1, "has_gstin": True, "requested_products": ["P03"]})
+    assert ("P03", "TIER_NOT_AVAILABLE") in [(e["product_id"], e["reason"]) for e in r.json()["excluded"]]   # city wins over a claimed tier
+    prof = {"business_type": "Shop", "employee_count": 2, "num_sites": 1, "city": "Lucknow", "has_gstin": False}
+    assert client.post("/engine/validate", json={"profile": prof, "items": {"P04": 10**400}}).status_code == 422

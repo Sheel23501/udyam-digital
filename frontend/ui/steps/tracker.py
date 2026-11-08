@@ -23,7 +23,8 @@ def render() -> None:
         b = order["bundle"]
         st.caption(" · ".join(f"{i['name']}" + (f" × {i['qty']}" if i["qty"] > 1 else "") for i in b["items"]))
         st.caption(f"₹{b['monthly_min']:,} {t('per_month')} · {t('setup')} ₹{b['setup']:,}")
-    st.toggle(t("notify"), value=True, key="notify")
+    st.toggle(t("notify"), value=True, key="notify", help=t("notify_demo"))
+    st.caption(t("notify_demo"))
     if order["stage_index"] < len(order["stages"]) - 1:
         if st.button(t("advance_demo"), key="advance", use_container_width=True):
             try:
@@ -39,7 +40,7 @@ def render() -> None:
             st.success(t("withdrawn"))
         elif st.button(t("withdraw_btn"), key="withdraw"):
             try:
-                api.delete(f"/consent/{ss.consent_id}")
+                api.delete(f"/consent/{ss.session_id}/{ss.consent_id}")
             except api.ApiError as e:
                 cards.api_error(e)
                 return

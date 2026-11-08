@@ -4,6 +4,13 @@ from .. import cards, nav
 from ..i18n import t
 
 
+def _staff_link() -> None:
+    try:
+        st.page_link("pages/backoffice.py", label=t("staff_link"), icon="🗂️")
+    except Exception:  # noqa: BLE001 — page links need the multipage runtime (absent in some test harnesses)
+        pass
+
+
 def _pick(code: str) -> None:
     st.session_state.lang = code
     nav.set_step("otp")
@@ -22,3 +29,4 @@ def render() -> None:
     with c2:
         st.button("English", key="lang_en", use_container_width=True, on_click=_pick, args=("en",))
     st.caption("हिंदी · English · Hinglish bhi chalega")
+    _staff_link()

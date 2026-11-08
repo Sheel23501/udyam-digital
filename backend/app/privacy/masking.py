@@ -26,5 +26,15 @@ def mask_text(text: str) -> str:
     return PHONE_RE.sub(lambda m: mask_phone(m.group()), text)
 
 
+def mask_profile(profile: dict | None) -> dict | None:
+    """Profile as returned by the API: the GSTIN masked (the raw one stays server-side for registry and KYC checks)."""
+    if not profile:
+        return profile
+    out = dict(profile)
+    if out.get("gstin"):
+        out["gstin"] = mask_gstin(out["gstin"])
+    return out
+
+
 def mask_session(session_id: str) -> str:
     return (session_id or "")[:6] + "…" if session_id else ""

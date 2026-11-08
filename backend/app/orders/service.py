@@ -28,6 +28,11 @@ def create(session_id: str, items: dict[str, int] | None = None, require_kyc_pas
         raise OrderError(404, "unknown session")
     if sess.get("order_id"):
         raise OrderError(409, {"message": "this session already has an order", "order_id": sess["order_id"]})
+    if sess.get("status") == "erased":
+        raise OrderError(410, "this session's data was erased at the owner's request")
+    from ..privacy import consent                             # noqa: PLC0415
+    if not consent.active_for(session_id):
+        raise OrderError(403, {"message": "consent required: the owner has not consented or has withdrawn consent"})
     if require_kyc_pass and sess.get("kyc_verdict") != "PASS":
         raise OrderError(409, {"message": "KYC must be PASS before an order can be placed", "kyc_verdict": sess.get("kyc_verdict")})
     prof = Profile(**(sess.get("profile") or {}))

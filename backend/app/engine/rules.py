@@ -12,7 +12,10 @@ MAX_DEPENDENCY_PASSES = 50
 
 
 def resolve_tier(prof: Profile) -> int:
-    return prof.city_tier if prof.city_tier in (1, 2) else tier_for_city(prof.city)
+    """The city decides the tier; a caller-supplied tier is used only when no city is known."""
+    if prof.city:
+        return tier_for_city(prof.city)
+    return prof.city_tier if prof.city_tier in (1, 2) else tier_for_city(None)
 
 
 def eligible(p: Product, prof: Profile, bundle_ids: set[str], ignore_deps: bool = False) -> Reason | None:

@@ -60,8 +60,8 @@ Expected:
 
 | Check | Expected last line |
 |---|---|
-| 1) backend tests | `1981 passed, 3 skipped` (the 3 skips are demo-cache tests that need a recorded LLM cache) |
-| 2) UI tests | `7 passed` |
+| 1) backend tests | about `2050 passed` (no skips; the count grows as tests are added) |
+| 2) UI tests | about `11 passed` |
 | 3) scenarios | `30/30 passed` |
 | 4) KYC | a 12-row table, then `12/12 match the answer key` |
 | 5) conversations | `16/16 passed · 0 LLM calls · 0 tokens ...` |
@@ -90,7 +90,7 @@ Open a **second terminal**, go to the repo folder, then:
 ```bash
 source .venv/bin/activate
 cd backend
-ADVISOR_OFFLINE=1 uvicorn app.main:app --port 8000
+ADVISOR_OFFLINE=1 STAFF_PIN=check-1234 uvicorn app.main:app --port 8000
 ```
 
 Wait for `Uvicorn running on http://127.0.0.1:8000`. Leave this terminal open.
@@ -270,13 +270,15 @@ Expect `order: ORD-XXXXXXXX`, then `PLACED` with a date for each stage (installa
 then `after advance: VERIFIED`.
 Ordering on a session whose latest KYC is not PASS returns 409.
 
-**6.14 Back-office queue and audit log**
+**6.14 Back-office queue and audit log** — staff only: these endpoints need the `STAFF_PIN` the server was started
+with, sent as the `X-Staff-Pin` header (step 5 starts the API with `STAFF_PIN=check-1234`). Without it they return 401.
 
 ```bash
-curl -s "localhost:8000/backoffice/leads?limit=3" | python3 -c "import sys,json; [print(r['id'], r['score'], r['business'], '|', r['suggested_action']) for r in json.load(sys.stdin)]"
-curl -s "localhost:8000/backoffice/audit?limit=5" | python3 -c "import sys,json; [print(a['action'], '|', a['subject_masked']) for a in json.load(sys.stdin)]"
+curl -s -o /dev/null -w "without the PIN -> %{http_code}\n" "localhost:8000/backoffice/leads?limit=3"
+curl -s -H "X-Staff-Pin: check-1234" "localhost:8000/backoffice/leads?limit=3" | python3 -c "import sys,json; [print(r['id'], r['score'], r['business'], '|', r['suggested_action']) for r in json.load(sys.stdin)]"
+curl -s -H "X-Staff-Pin: check-1234" "localhost:8000/backoffice/audit?limit=5" | python3 -c "import sys,json; [print(a['action'], '|', a['subject_masked']) for a in json.load(sys.stdin)]"
 ```
-Expect three leads with a score between 0 and 1 and a suggested next action. Sessions that stopped before an order
+Expect `without the PIN -> 401`, then three leads with a score between 0 and 1 and a suggested next action. Sessions that stopped before an order
 (including the ones the tests in step 4 and the blocks above created) rank alongside 200 historical dropped leads
 (ids starting with `L`). Then the five latest audit entries, e.g. `lookup.gstin | 32XXXXXXXXXX1ZR found`.
 **No full GSTIN appears in the audit log**, only masked ones.
@@ -284,11 +286,12 @@ Expect three leads with a score between 0 and 1 and a suggested next action. Ses
 **6.15 Privacy admin: withdraw consent, retention purge**
 
 ```bash
-curl -s -X DELETE localhost:8000/consent/$CID | python3 -m json.tool
+curl -s -X DELETE localhost:8000/consent/$SID/$CID | python3 -m json.tool
 curl -s -o /dev/null -w "KYC after withdrawal -> %{http_code}\n" -X POST localhost:8000/kyc/run -H 'content-type: application/json' -d "{\"session_id\":\"$SID\",\"sample_applicant\":\"K03\"}"
-curl -s -X POST localhost:8000/admin/retention/run -H 'content-type: application/json' -d '{}' | python3 -c "import sys,json; d=json.load(sys.stdin); print('removed:', len(d['removed']), 'kept:', d['kept'])"
+curl -s -X POST localhost:8000/admin/retention/run -H "X-Staff-Pin: check-1234" -H 'content-type: application/json' -d '{}' | python3 -c "import sys,json; d=json.load(sys.stdin); print('removed:', len(d['removed']), 'kept:', d['kept'])"
 ```
-Expect a `withdrawn_ts` timestamp, then `KYC after withdrawal -> 403`, then `removed: 0` and `kept:` 1 or more (the upload from 6.11
+Expect a `withdrawn_ts` timestamp and a `cleanup` block (uploaded images and the chat transcript are deleted on
+withdrawal; the consent URL needs the session id, so nobody can withdraw someone else's consent), then `KYC after withdrawal -> 403`, then `removed: 0` and `kept:` 1 or more (the upload from 6.11
 is fresh, so it is kept; rejected uploads are deleted after 30 days, verified ones after 90).
 <!-- check:end -->
 

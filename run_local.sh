@@ -3,6 +3,7 @@
 set -e
 cd "$(dirname "$0")"
 source .venv/bin/activate
+[ -f .env ] && { set -a; . ./.env; set +a; }   # STAFF_PIN, keys etc. for both processes
 (cd backend && uvicorn app.main:app --reload --port 8000) &
 BACKEND_PID=$!
 trap 'kill $BACKEND_PID 2>/dev/null' EXIT

@@ -11,6 +11,7 @@
 The server secret comes from OTP_SECRET, else from data/.otp_secret (generated once, gitignored)."""
 import hashlib
 import hmac
+import ipaddress
 import math
 import os
 import re
@@ -25,6 +26,19 @@ from . import sms
 
 OTP_LENGTH = 6
 INTERNAL_CLIENTS = {"testclient", "", None}
+PRIVATE_NETS = [ipaddress.ip_network(n) for n in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "fc00::/7")]
+
+
+def _is_internal(ip: str | None) -> bool:
+    """The app's own UI (in-process, or a container on a private network) is one client for all owners: a per-IP cap
+    there would lock everyone out together. Per-number limits still apply to every request."""
+    if ip in INTERNAL_CLIENTS:
+        return True
+    try:
+        addr = ipaddress.ip_address(ip)
+    except ValueError:
+        return False
+    return addr.is_loopback or any(addr in net for net in PRIVATE_NETS)
 
 
 def _int_env(name: str, default: int) -> int:
@@ -120,7 +134,7 @@ PHONE_RE = re.compile(r"^[6-9]\d{9}$")
 
 def normalise_phone(raw: str) -> str:
     """'+91 98765-43210', '098765 43210', '9876543210' -> '9876543210'. ValueError for anything that is not an Indian mobile."""
-    digits = re.sub(r"\D", "", raw or "")
+    digits = "".join(str(int(ch)) for ch in (raw or "") if ch.isdigit())     # any script's digits -> ASCII
     if len(digits) == 12 and digits.startswith("91"):
         digits = digits[2:]
     elif len(digits) == 11 and digits.startswith("0"):
@@ -167,7 +181,7 @@ def request_code(raw_phone: str, client_ip: str | None = None) -> dict:
         raise OtpError(400, "invalid_phone", str(e)) from None
     now = _now()
     ph = phone_hash(phone10)
-    iph = None if client_ip in INTERNAL_CLIENTS else _mac("ip", client_ip)
+    iph = None if _is_internal(client_ip) else _mac("ip", client_ip)
     _rate_limits(ph, iph, now)
     try:
         prov = sms.provider()

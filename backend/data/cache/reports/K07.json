@@ -12,7 +12,7 @@
     {
       "code": "GSTIN_CHECKSUM",
       "status": "PASS",
-      "evidence": "07CPCXN0398P1ZT",
+      "evidence": "07XXXXXXXXXX1ZT",
       "message_en": "GSTIN format and check digit are valid.",
       "message_hi": "GSTIN का प्रारूप सही है।"
     },
@@ -47,7 +47,7 @@
     {
       "code": "NAME_MISMATCH",
       "status": "FAIL",
-      "evidence": "GST legal name: Shri Physio Clinic; GST legal name vs registry: Neha Banerjee (Prop. Shri Physio Clinic) | Neha Banerjee (Prop. Neelgiri Physio Clinic)",
+      "evidence": "GST legal name: Shri Physio Clinic; GST legal name vs registry: Neha B. (Prop. Shri Physio Clinic) | Neha B. (Prop. Neelgiri Physio Clinic)",
       "message_en": "The business name differs between documents (GST legal name, GST legal name vs registry). Please upload documents that all carry the same registered name.",
       "message_hi": "दस्तावेज़ों में व्यवसाय का नाम अलग-अलग है। कृपया एक ही पंजीकृत नाम वाले दस्तावेज़ दें।"
     },
@@ -61,7 +61,7 @@
     {
       "code": "SIGNATORY_NOT_AUTHORISED",
       "status": "PASS",
-      "evidence": "id=Neha Banerjee; record=Neha Banerjee (the GST certificate)",
+      "evidence": "id=Neha B.; record=Neha B. (the GST certificate)",
       "message_en": "The signatory matches the person of record for this business.",
       "message_hi": "हस्ताक्षरकर्ता रिकॉर्ड से मेल खाता है।"
     },

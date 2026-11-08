@@ -17,6 +17,9 @@ if "partner" not in ss:
     ss.partner = st.query_params.get("partner")
     ss.ref = st.query_params.get("ref")
 
+if ss.pop("_lang_from_chat", False):                  # the advisor switched language: move the radio with it
+    ss.lang_radio = "हिंदी" if ss.lang == "hi" else "English"
+
 if ss.step != "language":
     c1, c2 = st.columns([3, 1.2])
     with c2:

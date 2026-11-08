@@ -6,6 +6,7 @@ import uuid
 from datetime import datetime, timezone
 
 from ..data.loader import connect
+from ..privacy.masking import mask_profile
 from .state import State
 
 _STATES: dict[str, State] = {}
@@ -57,7 +58,7 @@ def get(session_id: str) -> dict | None:
         "session_id": d["id"], "created": d["created"], "updated": d.get("updated"), "language": d["language"],
         "partner_code": d["partner_code"], "referrer": d["referrer"], "status": d["status"], "handoff_reason": d.get("handoff_reason"),
         "phone_masked": d.get("phone_masked"), "phone_verified": bool(d.get("phone_verified")),
-        "profile": json.loads(d["profile_json"]) if d["profile_json"] else None,
+        "profile": mask_profile(json.loads(d["profile_json"])) if d["profile_json"] else None,
         "recommendation": json.loads(d["recommendation_json"]) if d["recommendation_json"] else None,
     }
     kyc = connect().execute("SELECT id, verdict, ts FROM kyc_applications WHERE session_id = ? ORDER BY ts DESC, rowid DESC LIMIT 1",
@@ -88,6 +89,9 @@ def save(session_id: str, st: State) -> None:
     con = connect()
     row = con.execute("SELECT status FROM sessions WHERE id = ?", (session_id,)).fetchone()
     status = row["status"] if row else "open"
+    if status == "erased":                                    # never write a transcript back after erasure
+        _STATES.pop(session_id, None)
+        return
     if status == "open" and st.recommendation is not None:
         status = "quoted"
     con.execute("UPDATE sessions SET profile_json = ?, recommendation_json = ?, history_json = ?, language = ?, status = ?, updated = ? WHERE id = ?",
@@ -98,10 +102,17 @@ def save(session_id: str, st: State) -> None:
 
 
 def set_status(session_id: str, status: str, handoff_reason: str | None = None) -> None:
+    """Erased is final; an ordered session is not reopened by a later KYC run."""
     if status not in STATUSES:
         raise ValueError(status)
     _ensure_columns()
     con = connect()
+    row = con.execute("SELECT status FROM sessions WHERE id = ?", (session_id,)).fetchone()
+    current = row["status"] if row else None
+    if current == "erased" and status != "erased":
+        return
+    if current == "ordered" and status.startswith("kyc_"):
+        return
     if handoff_reason is not None:
         con.execute("UPDATE sessions SET status = ?, handoff_reason = ?, updated = ? WHERE id = ?", (status, handoff_reason, now_iso(), session_id))
     else:

@@ -1,5 +1,6 @@
 """One-time password service and endpoints: random codes, hashed storage, expiry, attempt lock, single use,
 resend cooldown, hourly caps, token exchange for a session, REQUIRE_OTP, provider failure, and no leaks to the audit log."""
+import os
 import random
 
 import pytest
@@ -9,6 +10,7 @@ from app.auth import otp, sms
 from app.data.loader import connect
 from app.main import app
 
+os.environ.setdefault("STAFF_PIN", "test-pin-4821")
 client = TestClient(app)
 
 
@@ -137,6 +139,7 @@ def test_resend_cooldown_then_hourly_cap(clock):
 
 def test_per_ip_cap_applies_to_real_clients_only(clock, monkeypatch):
     monkeypatch.setenv("OTP_MAX_PER_IP_HOUR", "3")
+    monkeypatch.setenv("TRUST_PROXY", "1")                 # X-Forwarded-For is honoured only behind a known proxy
     ip = f"203.0.113.{random.randint(1, 254)}"
     for _ in range(3):
         request(phone(), headers={"x-forwarded-for": ip})
@@ -204,7 +207,29 @@ def test_audit_log_never_holds_numbers_or_codes(clock):
     verify(r["request_id"], "000000" if r["demo_code"] != "000000" else "111111")
     verify(r["request_id"], r["demo_code"])
     client.post("/auth/otp/request", json={"phone": f"+91 {p[:5]} {p[5:]}"})        # spaced form, cooldown error path
-    rows = client.get("/backoffice/audit?limit=50").json()
+    rows = client.get("/backoffice/audit?limit=50", headers={"X-Staff-Pin": os.environ["STAFF_PIN"]}).json()
     text = " ".join(a["subject_masked"] or "" for a in rows)
     assert p not in text and r["demo_code"] not in text and f"{p[:5]} {p[5:]}" not in text
     assert any(a["action"] == "otp.verified" for a in rows)
+
+
+
+def test_spoofed_forwarded_for_is_ignored_without_trust_proxy(clock, monkeypatch):
+    monkeypatch.delenv("TRUST_PROXY", raising=False)
+    monkeypatch.setenv("OTP_MAX_PER_IP_HOUR", "2")
+    from app.routers.auth import _client_ip
+    req = type("R", (), {"headers": {"x-forwarded-for": "203.0.113.7"}, "client": type("C", (), {"host": "198.51.100.4"})()})()
+    assert _client_ip(req) == "198.51.100.4"
+
+
+def test_private_network_callers_share_no_ip_cap(clock, monkeypatch):
+    monkeypatch.setenv("OTP_MAX_PER_IP_HOUR", "2")
+    assert otp._is_internal("172.18.0.3") and otp._is_internal("127.0.0.1") and not otp._is_internal("203.0.113.9")
+
+
+def test_devanagari_digits_are_the_same_number(clock):
+    p = phone()
+    deva = p.translate(str.maketrans("0123456789", "०१२३४५६७८९"))
+    assert otp.normalise_phone(deva) == p
+    request(p)
+    assert client.post("/auth/otp/request", json={"phone": deva}).status_code == 429     # same cooldown applies

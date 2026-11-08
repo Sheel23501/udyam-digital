@@ -2,7 +2,7 @@
 
 ![Architecture](architecture.png)
 
-Regenerate the image with `python scripts/make_architecture.py` from `backend/`. The same structure as Mermaid (renders on GitHub):
+Regenerate the image with `python scripts/make_architecture.py` from `backend/` (needs `pip install matplotlib`, used only by the chart scripts). The same structure as Mermaid (renders on GitHub):
 
 ```mermaid
 flowchart LR

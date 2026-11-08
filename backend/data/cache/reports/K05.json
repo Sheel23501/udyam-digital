@@ -12,7 +12,7 @@
     {
       "code": "GSTIN_CHECKSUM",
       "status": "PASS",
-      "evidence": "32TZAXB5481U1Z1",
+      "evidence": "32XXXXXXXXXX1Z1",
       "message_en": "GSTIN format and check digit are valid.",
       "message_hi": "GSTIN का प्रारूप सही है।"
     },
@@ -54,7 +54,7 @@
     {
       "code": "SIGNATORY_NOT_AUTHORISED",
       "status": "PASS",
-      "evidence": "id=Anita Shah; record=Anita Shah (our records)",
+      "evidence": "id=Anita S.; record=Anita S. (our records)",
       "message_en": "The signatory matches the person of record for this business.",
       "message_hi": "हस्ताक्षरकर्ता रिकॉर्ड से मेल खाता है।"
     },

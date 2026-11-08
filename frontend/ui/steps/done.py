@@ -4,6 +4,13 @@ from .. import cards, nav
 from ..i18n import t
 
 
+def _staff_link() -> None:
+    try:
+        st.page_link("pages/backoffice.py", label=t("staff_link"), icon="🗂️")
+    except Exception:  # noqa: BLE001 — page links need the multipage runtime (absent in some test harnesses)
+        pass
+
+
 def render() -> None:
     ss = st.session_state
     cards.header(5)
@@ -19,3 +26,4 @@ def render() -> None:
     if ss.get("partner"):
         st.caption(t("partner_banner", code=ss.partner))
     st.button(t("start_again"), key="start_again", use_container_width=True, on_click=nav.reset)
+    _staff_link()

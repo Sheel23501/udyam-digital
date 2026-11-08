@@ -4,7 +4,7 @@
 
 A phone-first, Hindi/English journey that lets a small business owner discover the right Accel Business bundle, get a single-price quote, complete Smart KYC against mock GSTIN/Udyam registries, and track activation — with no salesperson in the loop.
 
-**Stack:** Python 3.13 · FastAPI · SQLite · Streamlit · advisor LLM on Groq `openai/gpt-oss-120b` through an OpenAI-compatible provider chain (Cerebras → Mistral → OpenRouter → Gemini as fallbacks) · KYC vision on Gemini (`google-genai`). Runs entirely on free tiers.
+**Stack:** Python 3.13 · FastAPI · SQLite · Streamlit · advisor LLM through an OpenAI-compatible provider chain (the deployed demo: paid Gemini `gemini-3.5-flash-lite` first, free Groq `openai/gpt-oss-120b` as backup; Cerebras, Mistral and OpenRouter also supported) · KYC vision on Gemini (`google-genai`). Everything also runs on free tiers.
 
 **Checking it yourself:** [step-by-step guide](docs/how-to-check.md): clone → install → one-shot checks → every API endpoint by hand with expected output.
 
@@ -65,7 +65,7 @@ an advisor reply, and the UI reaching the API over the compose network. Run the 
 All commands run from `backend/` with the virtualenv active.
 
 - **Advisor scenarios as profiles** (rules engine only, instant): `python scripts/run_scenarios.py path/to/folder/` — 30 shipped in `tests/scenarios/`.
-- **Advisor scenarios as transcripts** (live LLM + engine): `python scripts/run_llm_scenarios.py path/to/folder/` — 16 shipped in `tests/llm_scenarios/`. Each turn is typed to the advisor; the check is on the engine result and on `validate()` (zero rule violations), never on the prose. Add `--runs 3` to check flakiness, `--save docs/demo-transcripts.md` to write transcripts.
+- **Advisor scenarios as transcripts** (live LLM + engine): `python scripts/run_llm_scenarios.py path/to/folder/` — 16 shipped in `tests/llm_scenarios/`. Each turn is typed to the advisor; the check is on the engine result and on `validate()` (zero rule violations), never on the prose. Add `--runs 3` to check flakiness, `--save ../docs/demo-transcripts.md` to write transcripts (paths are relative to `backend/`).
 - **KYC report** on the 12 sample applicants: `python scripts/kyc_report.py --key tests/kyc_answer_key_images.json` (cached extractions ship in `data/cache/extractions/`, so this needs no API key).
 - **Tests:** `pytest -q` — rules, dependency closure, a 900-profile invariant grid, KYC validators, image gates, and the advisor tool loop with a fake provider (no network).
 
@@ -106,12 +106,12 @@ Start it with `cd backend && uvicorn app.main:app --reload --port 8000`; interac
 | Advisor | `POST /advisor/chat {session_id, text}` | reply + `profile` + `recommendation` (engine JSON the card is drawn from) |
 | Quote edits | `POST /engine/validate {profile, items}` | violations with reasons, price, what else is addable |
 | Engine only | `POST /engine/recommend` (Profile) · `GET /catalogue` | deterministic, no LLM |
-| Consent | `GET /consent/notice?lang=hi` · `POST /consent {session_id, purposes, language}` · `DELETE /consent/{id}` | all four required purposes must be ticked |
+| Consent | `GET /consent/notice?lang=hi` · `POST /consent {session_id, purposes, language}` · `DELETE /consent/{session_id}/{id}` | all four required purposes must be ticked; withdrawal deletes uploaded images and the transcript and blocks orders |
 | KYC | `POST /kyc/upload` (multipart: `session_id`, `doc_type`, `file`) · `POST /kyc/run {session_id, sample_applicant?}` · `GET /kyc/{application_id}` | **403 without consent.** `sample_applicant: "K01".."K12"` uses the provided packs from cached extractions |
 | Registry | `GET /lookup/gstin/{gstin}` · `GET /lookup/udyam/{number}` | masked output, 30 req/min, audited |
 | Order | `POST /orders {session_id, items?}` · `GET /orders/{id}` · `POST /orders/{id}/advance` | needs a PASS KYC on the session; ETA per stage |
-| Back-office | `GET /backoffice/leads` · `GET /backoffice/leads/{id}/score` · `POST /backoffice/handoff` · `GET /backoffice/audit` | live unclosed sessions + 200 scored historical drops |
-| Privacy admin | `POST /admin/retention/run` · `POST /admin/erase/{session_id}` | retention purge; DPDP erasure request |
+| Back-office (staff) | `GET /backoffice/leads` · `GET /backoffice/leads/{id}/score` · `GET /backoffice/audit` (header `X-Staff-Pin`) · `POST /backoffice/handoff` (owner) | live unclosed sessions + 200 scored historical drops |
+| Privacy admin (staff) | `POST /admin/retention/run` · `POST /admin/erase/{session_id}` (header `X-Staff-Pin`) | retention purge; DPDP erasure request (final: consent withdrawn, nothing can be written back) |
 
 Privacy plumbing lives in `backend/app/privacy/`: `consent.py` (itemised purposes, withdrawal), `masking.py`, `audit.py` (masked subjects only), `retention.py` (30 days rejected / 90 days verified, erasure).
 

@@ -26,6 +26,8 @@ NUMBER_WORDS = {
     "pachaas": 50, "pachas": 50, "sau": 100,
     "एक": 1, "दो": 2, "तीन": 3, "चार": 4, "पाँच": 5, "पांच": 5, "छह": 6, "छः": 6, "छे": 6, "सात": 7, "आठ": 8, "नौ": 9,
     "दस": 10, "ग्यारह": 11, "बारह": 12, "पंद्रह": 15, "बीस": 20, "पच्चीस": 25, "तीस": 30, "चालीस": 40, "पचास": 50, "सौ": 100,
+    "thirteen": 13, "fourteen": 14, "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19,
+    "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90,
     "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
     "eleven": 11, "twelve": 12, "fifteen": 15, "twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, "hundred": 100,
     "couple": 2, "dozen": 12, "single": 1, "alone": 1, "akela": 1, "akele": 1,
@@ -74,8 +76,16 @@ def detect_language(text: str, current: str = "en") -> str:
     return current or "en"
 
 
+TENS = {"twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90}
+UNITS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9}
+COUNT_NOUNS = {"log", "logon", "dukaan", "dukan", "dukaanein", "shop", "shops", "branch", "branches", "office", "offices",
+               "people", "staff", "outlet", "outlets", "लोग", "दुकानें", "दुकान"}
+NOT_A_NUMBER = re.compile(r"don'?t know|do not know|not sure|no idea|pata nahi|maloom nahi|पता नहीं|मालूम नहीं", re.I)
+
+
 def parse_count(value) -> int | None:
-    """Turn 5, "5", "paanch", "पाँच लोग", "about 10 people", "just me" into an int; None if nothing numeric is there."""
+    """Turn 5, "5", "paanch", "पाँच लोग", "twenty five", "about 10 people", "just me" into an int; None if nothing
+    numeric is there ("I do not know" is not 2)."""
     if value is None or isinstance(value, bool):
         return None
     if isinstance(value, (int, float)):
@@ -84,9 +94,17 @@ def parse_count(value) -> int | None:
     m = re.search(r"\d+", text)
     if m:
         return int(m.group())
+    if NOT_A_NUMBER.search(text):
+        return None
     if re.search(r"\b(just me|only me|myself|sirf main|main akela|main akeli)\b", text):
         return 1
-    for token in re.findall(r"[a-z]+|[ऀ-ॿ]+", text):
+    tokens = re.findall(r"[a-z]+|[\u0900-\u097F]+", text)
+    for i, token in enumerate(tokens):
+        nxt = tokens[i + 1] if i + 1 < len(tokens) else ""
+        if token in TENS:
+            return TENS[token] + UNITS.get(nxt, 0)
+        if token == "do" and not (len(tokens) <= 2 or nxt in COUNT_NOUNS):
+            continue                                          # English "do", not Hindi "two"
         if token in NUMBER_WORDS:
             return NUMBER_WORDS[token]
     return None
@@ -118,7 +136,8 @@ def parse_bool(value) -> bool | None:
         return value
     if value is None:
         return None
-    text = str(value).strip().lower()
+    text = re.sub(r"[^\w\u0900-\u097F ]+", " ", str(value)).strip().lower()
+    text = text.split()[0] if text.split() and text.split()[0] in {"yes", "no", "haan", "nahi", "nahin", "ji", "हाँ", "हां", "नहीं"} else text
     if text in {"true", "yes", "y", "haan", "ha", "han", "ji", "हाँ", "हां", "है", "registered", "active", "1"}:
         return True
     if text in {"false", "no", "n", "nahi", "nahin", "नहीं", "नही", "not yet", "none", "0"}:
@@ -137,7 +156,7 @@ COUNT_TOKEN = r"(\d+|[a-z]+|[ऀ-ॿ]+)"
 NEED_WORDS = [
     (r"card machine|pos\b|upi|swipe|billing|कार्ड मशीन|पेमेंट", "pos_drops"),
     (r"whatsapp|व्हाट्सएप", "whatsapp_customers"),
-    (r"camera|cctv|theft|chori|कैमरा|चोरी|सीसीटीवी", "cctv"),
+    (r"camera|camere|cctv|theft|chori|कैमरा|कैमरे|चोरी|सीसीटीवी", "cctv"),
     (r"\bemail|e-mail|ईमेल", "email_docs"),
     (r"virus|ransomware|malware|hack|firewall|data (?:safe|secur)|secur(?:e|ity) (?:the |our |my )?(?:network|computers?|pcs?|data|systems?|records)|"
      r"(?:computers?|pcs?|data|records|network) (?:safe|secure)|keep (?:our|my|the) (?:computers?|pcs?|data|records) safe|डेटा सुरक्षा", "data_security"),
@@ -183,6 +202,9 @@ def _count_near(text: str, words: str) -> int | None:
     for m in re.finditer(COUNT_TOKEN + r"\s*(?:hi\s+|ही\s+)?" + words, text):
         n = parse_count(m.group(1))
         if n:
+            tens = re.search(r"\b(" + "|".join(TENS) + r")[\s-]*$", text[:m.start(1)])
+            if tens and n < 10:
+                n += TENS[tens.group(1)]                    # "twenty five people" is 25, not 5
             return n
     for m in re.finditer(words + r"\s*(?:are|hain|है|हैं|:)?\s*" + COUNT_TOKEN, text):
         n = parse_count(m.group(1))
@@ -221,7 +243,7 @@ def read_facts(text: str, pending: str | None, cities: dict[str, int], business_
     elif not strict:
         m = CITY_AFTER_IN.search(text or "")
         if m and m.group(1).lower() not in {"india", "hindi", "english"}:
-            out["city"] = normalise_city(m.group(1), cities)
+            out["_city_guess"] = normalise_city(m.group(1), cities)   # weak: caller uses it only to fill an empty city
     g = GSTIN_IN_TEXT.search((text or "").upper())
     if g:
         out["gstin"] = g.group()
@@ -250,13 +272,18 @@ def read_facts(text: str, pending: str | None, cities: dict[str, int], business_
             if n:
                 out[pending] = n
         elif pending == "has_gstin":
-            b = parse_bool(low.split()[0] if low.split() else "")
-            if b is not None:
-                out["has_gstin"] = b
-        elif pending == "business_type" and len(low.split()) <= 4 and low.strip():
-            out["business_type"] = text.strip()
+            if re.search(r"\b(?:no|not|nahi|nahin|nope)\b|नहीं", low):
+                out["has_gstin"] = False
+            elif re.search(r"\b(?:yes|yeah|haan|han|ha|ji|registered|hai)\b|हाँ|हां|है", low):
+                out["has_gstin"] = True
+        elif pending == "business_type" and 0 < len(low.split()) <= 8 and not DONT_KNOW.search(low) \
+                and re.search(r"[a-z\u0900-\u097F]{3,}", low) and low.strip(" ?.!") not in {"ok", "okay", "yes", "no", "hmm", "hi", "hello", "haan", "nahi"}:
+            out["business_type"] = text.strip().rstrip(".!?")
         elif pending == "city" and len(low.split()) <= 3 and low.strip():
             out["city"] = normalise_city(text, cities)
         elif pending == "needs" and low.strip():
-            out["no_specific_need"] = True          # any answer to "what do you want solved" counts as answered
+            if re.search(r"\bbranch|ब्रांच|शाखा", low):
+                out["needs"] = ["multi_branch"]
+            else:
+                out["no_specific_need"] = True      # any other answer to "what do you want solved" counts as answered
     return out

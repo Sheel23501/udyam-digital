@@ -35,6 +35,7 @@ def _send(phone: str) -> None:
                        "To use the on-screen demo code, remove SMS_PROVIDER from the app's secrets.")
         return
     ss.otp = {**r, "sent_at": time.time()}
+    ss.otp_phone = phone                                      # the phone field is not on the code screen: keep it for resend
     ss.pop("otp_code", None)
     ss.pop("otp_error", None)
     st.rerun()
@@ -96,6 +97,9 @@ def render() -> None:
     if ss.get("otp_error"):
         st.error(ss.otp_error)
     if st.button(t("verify"), key="verify_otp", type="primary", use_container_width=True):
+        if not (code or "").strip():
+            ss.otp_error = t("otp_enter")
+            st.rerun()
         _verify((code or "").strip())
 
     left = int(o["resend_in"] - (time.time() - o["sent_at"]))
@@ -103,6 +107,6 @@ def render() -> None:
     with c1:
         if st.button(t("resend") if left <= 0 else t("resend_in", s=left), key="resend_otp", use_container_width=True, disabled=left > 0):
             ss.pop("otp", None)
-            _send(ss.get("phone", ""))
+            _send(ss.get("otp_phone", ""))
     with c2:
         st.button(t("change_number"), key="change_number", use_container_width=True, on_click=_reset)

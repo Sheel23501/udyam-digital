@@ -1,4 +1,6 @@
 """Mobile verification by one-time password."""
+import os
+
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
@@ -18,9 +20,11 @@ class OtpVerifyIn(BaseModel):
 
 
 def _client_ip(request: Request) -> str | None:
-    fwd = request.headers.get("x-forwarded-for", "")
-    if fwd:
-        return fwd.split(",")[0].strip()
+    """X-Forwarded-For is trusted only behind a known proxy (TRUST_PROXY=1); otherwise anyone could spoof it."""
+    if os.getenv("TRUST_PROXY", "0").strip().lower() in ("1", "true", "yes"):
+        fwd = request.headers.get("x-forwarded-for", "")
+        if fwd:
+            return fwd.split(",")[0].strip()
     return request.client.host if request.client else None
 
 

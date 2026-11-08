@@ -7,6 +7,7 @@ from ..advisor.chat import step
 from ..advisor.explain import explain
 from ..advisor.tools import missing_fields, rec_payload
 from ..auth import otp
+from ..privacy.masking import mask_profile
 
 router = APIRouter(tags=["advisor"])
 
@@ -69,7 +70,7 @@ def chat(body: ChatIn) -> dict:
         "text": reply,
         "language": st.language,
         "provider": st.provider,
-        "profile": st.profile.model_dump(mode="json"),
+        "profile": mask_profile(st.profile.model_dump(mode="json")),
         "missing": missing_fields(st.profile, st),
         "recommendation": rec_payload(rec, st.quantities) if rec else None,
         "explanation": {"en": explain(rec, "en"), "hi": explain(rec, "hi")} if rec else None,

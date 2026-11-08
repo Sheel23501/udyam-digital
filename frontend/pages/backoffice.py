@@ -29,6 +29,7 @@ if not ss.get("staff_ok"):
 if api.health() is None:
     st.error("Backend not reachable")
     st.stop()
+STAFF = {"X-Staff-Pin": PIN}                              # the API checks the same PIN on every back-office call
 
 st.title("Unclosed leads")
 st.caption("Live sessions that stopped before an order, plus a scored sample of historical drops. The score only prioritises outreach; it never denies service.")
@@ -52,7 +53,7 @@ with tab_queue:
     with c3:
         limit = st.selectbox("Rows", [50, 100, 200, 500], index=2, key="f_limit")
     try:
-        rows = api.get("/backoffice/leads", limit=limit)
+        rows = api.get("/backoffice/leads", headers=STAFF, limit=limit)
     except api.ApiError as e:
         st.error(e.text())
         st.stop()
@@ -80,7 +81,7 @@ with tab_detail:
     lead_id = st.text_input("Lead or session id", key="detail_id", placeholder="L00001 or a session id from the queue")
     if lead_id:
         try:
-            d = api.get(f"/backoffice/leads/{lead_id.strip()}/score")
+            d = api.get(f"/backoffice/leads/{lead_id.strip()}/score", headers=STAFF)
         except api.ApiError as e:
             st.error(e.text())
         else:
@@ -99,7 +100,7 @@ with tab_detail:
 
 with tab_audit:
     try:
-        audit = api.get("/backoffice/audit", limit=200)
+        audit = api.get("/backoffice/audit", headers=STAFF, limit=200)
     except api.ApiError as e:
         st.error(e.text())
     else:
@@ -113,7 +114,7 @@ with tab_admin:
     ver = c2.number_input("Verified: days", 0, 365, 90, key="ret_ver")
     if st.button("Run retention purge", key="run_retention", type="primary"):
         try:
-            r = api.post("/admin/retention/run", json={"rejected_days": int(rej), "verified_days": int(ver)})
+            r = api.post("/admin/retention/run", json={"rejected_days": int(rej), "verified_days": int(ver)}, headers=STAFF)
         except api.ApiError as e:
             st.error(e.text())
         else:
@@ -125,7 +126,7 @@ with tab_admin:
     sid = st.text_input("Session id", key="erase_sid")
     if st.button("Erase", key="erase_btn") and sid:
         try:
-            r = api.post(f"/admin/erase/{sid.strip()}")
+            r = api.post(f"/admin/erase/{sid.strip()}", headers=STAFF)
         except api.ApiError as e:
             st.error(e.text())
         else:

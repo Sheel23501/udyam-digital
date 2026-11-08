@@ -1,5 +1,7 @@
 """Orders and the activation tracker."""
 from fastapi import APIRouter, HTTPException
+from typing import Annotated
+
 from pydantic import BaseModel, Field
 
 from ..orders import service
@@ -10,7 +12,7 @@ router = APIRouter(tags=["orders"])
 
 class OrderIn(BaseModel):
     session_id: str
-    items: dict[str, int] | None = Field(None, description="optional edited bundle {product_id: qty}; defaults to the session's recommendation")
+    items: dict[str, Annotated[int, Field(ge=0, le=10000)]] | None = Field(None, description="optional edited bundle {product_id: qty}; defaults to the session's recommendation")
 
 
 @router.post("/orders", status_code=201)

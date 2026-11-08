@@ -12,7 +12,7 @@
     {
       "code": "GSTIN_CHECKSUM",
       "status": "PASS",
-      "evidence": "27QHJXK0658U1ZL",
+      "evidence": "27XXXXXXXXXX1ZL",
       "message_en": "GSTIN format and check digit are valid.",
       "message_hi": "GSTIN का प्रारूप सही है।"
     },
@@ -61,9 +61,9 @@
     {
       "code": "SIGNATORY_NOT_AUTHORISED",
       "status": "FAIL",
-      "evidence": "id=Nisha Arora; record=Fatima Menon (our records)",
-      "message_en": "The ID is for Nisha Arora, but our records name Fatima Menon for this business. Please upload the correct ID or an authorisation letter.",
-      "message_hi": "आईडी Nisha Arora की है, जबकि रिकॉर्ड में Fatima Menon है। कृपया सही आईडी या अधिकार-पत्र दें।"
+      "evidence": "id=Nisha A.; record=Fatima M. (our records)",
+      "message_en": "The ID is for Nisha A., but our records name Fatima M. for this business. Please upload the correct ID or an authorisation letter.",
+      "message_hi": "आईडी Nisha A. की है, जबकि रिकॉर्ड में Fatima M. है। कृपया सही आईडी या अधिकार-पत्र दें।"
     },
     {
       "code": "ADDRESS_PROOF_STALE",

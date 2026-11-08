@@ -23,7 +23,8 @@ same process (`API_MODE = "inprocess"`). Nothing else to host, nothing to pay fo
      GEMINI_VISION_MODEL = "gemini-3.5-flash-lite"
      GEMINI_MODEL = "gemini-3.5-flash-lite"
      ADVISOR_MODEL_GROQ = "openai/gpt-oss-120b"
-     ADVISOR_PROVIDER_CHAIN = "groq,cerebras,mistral,openrouter,gemini"
+     ADVISOR_PROVIDER_CHAIN = "gemini,groq"          # paid Gemini first; use "groq,gemini" on free keys only
+     GEMINI_MIN_INTERVAL_S = "0"                      # paid Gemini: no free-tier throttling
      GROQ_API_KEY = "gsk_..."
      GEMINI_API_KEY = "AIza..."
      ```
@@ -41,8 +42,11 @@ same process (`API_MODE = "inprocess"`). Nothing else to host, nothing to pay fo
 - *"No matching distribution"* for a package → set Python 3.12 in Advanced settings and reboot.
 - *ImportError: libGL / libglib* → `packages.txt` must contain `libglib2.0-0` (it does); reboot the app.
 - App shows *"The service is starting up"* → `API_MODE` secret is missing or misspelled; must be exactly `inprocess`.
-- Advisor replies say *"Our assistant is briefly unavailable"* → Groq quota is exhausted or the key is wrong; the quote
-  is still correct (engine), only the prose is plainer. Check `GROQ_API_KEY`.
+- Advisor replies say *"Our assistant is briefly unavailable"* → every LLM provider failed (Gemini credit exhausted or key
+  wrong, and Groq's daily quota used up). The quote is still correct (engine), only the prose is plainer. Check
+  `GEMINI_API_KEY`, the Gemini billing balance, then `GROQ_API_KEY`.
+- "We could not send the code" on the mobile screen → `SMS_PROVIDER` is set but not working; the grey line under it says
+  why. Remove `SMS_PROVIDER` (and the `MC_*` lines) from the secrets for the on-screen demo code.
 
 ## Real SMS OTP
 
@@ -99,6 +103,6 @@ docker compose up --build       # API http://localhost:8000 (docs at /docs), UI 
 ## Before the demo (any option)
 
 - Open the app once 10 minutes before, so it is warm.
-- Run the demo conversations into the reply cache when Groq quota is available (`backend/`: `python scripts/record_demo.py`,
+- The demo conversations are already recorded in the reply cache (committed). To re-record them (`backend/`: `python scripts/record_demo.py`,
   then `git add -f` the files it prints and push), so the advisor answers even if the API is dead on the day.
 - Keep `docs/demo-transcripts.md` open as the fallback script.

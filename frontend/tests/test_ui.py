@@ -238,3 +238,32 @@ print("OK")
     import subprocess as sp
     r = sp.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=180)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout + r.stderr
+
+
+def test_resend_keeps_the_number_and_empty_code_is_explained(monkeypatch):
+    import time as _time
+    at = start()
+    at.button(key="lang_en").click().run()
+    at.text_input(key="phone").set_value(new_phone()).run()
+    at.button(key="send_otp").click().run()
+    first = at.session_state["otp"]
+    at.button(key="verify_otp").click().run()                                   # nothing typed
+    assert any("Enter the 6-digit code" in e.value for e in at.error)
+    at.session_state["otp"] = {**first, "sent_at": _time.time() - 999}           # cooldown over (server clock moved too below)
+    from app.auth import otp as otp_mod
+    monkeypatch.setattr(otp_mod, "_now", lambda: _time.time() + 999)
+    at.run()
+    at.button(key="resend_otp").click().run()
+    assert not at.exception, at.exception
+    again = at.session_state["otp"]
+    assert again["request_id"] != first["request_id"] and again["phone_masked"] == first["phone_masked"]
+    assert not any("10-digit" in e.value for e in at.error)
+
+
+def test_language_radio_follows_the_owner_typing_hindi():
+    at = to_chat(start(), "lang_en")
+    at.chat_input(key="chat_box").set_value("मेरी साड़ी की दुकान है दिल्ली में").run()
+    assert not at.exception, at.exception
+    assert at.session_state["lang"] == "hi" and at.radio(key="lang_radio").value == "हिंदी"
+    at.run()
+    assert at.session_state["lang"] == "hi"                                      # not flipped back by the radio

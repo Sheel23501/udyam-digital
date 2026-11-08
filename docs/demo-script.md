@@ -11,7 +11,7 @@ Open the app 10 minutes before so it is warm. Keep `docs/demo-transcripts.md` op
 | 1:30–2:15 | **Continue** → consent (Hindi) → tick 4 → **Use a sample applicant** → K11 → Verify: FAIL (bill from October 2025) → Try another → K06 → FAIL (checksum / tampered digit) → K03 → PASS, masked GSTIN, registry Active. | "Before any document is read, the owner sees exactly what we collect and why: DPDP consent in their language, and the API refuses documents without it. Then Smart KYC reads four photos and checks the registries live. It catches a stale bill, a tampered GSTIN, a cancelled registration. Last quarter 22 customers were activated with a non-active GSTIN. With this: zero." |
 | 2:15–2:35 | **Place my order** → tracker with dates → **Advance stage** → toast | "No status calls. Every step has a date. In the data, customers who had to call five times churned at 28%; those who called once, 6%." |
 | 2:35–2:55 | Sidebar → backoffice → staff PIN → queue | "Leads the journey can't close go to a scored queue, so the field team spends its day on the ₹31,000-a-month multi-site customer, not the ₹2,500 kirana." |
-| 2:55–3:00 | README / scenario runner | "Everything is tested: 1,980 tests, 30 scenario fixtures, a KYC answer key. Drop your 15 scenarios in and run them." |
+| 2:55–3:00 | README / scenario runner | "Everything is tested: over 2,000 tests, 30 scenario fixtures, a KYC answer key. Drop your 15 scenarios in and run them." |
 
 ## Live scenario playbook (judges type, you narrate)
 
@@ -33,5 +33,5 @@ cd backend
 python scripts/run_scenarios.py                       # 30/30 profile scenarios
 python scripts/kyc_report.py --key tests/kyc_answer_key_images.json   # 12/12
 ADVISOR_OFFLINE=1 python scripts/run_llm_scenarios.py --allow-offline # 16/16 with the network dead
-pytest -q                                             # ~1,980 tests
+pytest -q                                             # ~2,050 tests
 ```

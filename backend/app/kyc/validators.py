@@ -249,3 +249,29 @@ def check_pan_initial(gst: GstCertificate) -> CheckResult | None:
     return None if ok else _r("PAN_INITIAL", "WARN", f"PAN 5th char {gst.gstin[6]} vs trade name {gst.trade_name}",
                               "The PAN embedded in the GSTIN does not start with the business name's initial; we will double-check.",
                               "GSTIN में PAN का अक्षर व्यवसाय के नाम से मेल नहीं खाता; हम जांच करेंगे।")
+
+
+# 12. Udyam-only path (no GST certificate): the Udyam certificate is the anchor ---------------------------------------
+def check_names_udyam(udyam: UdyamCertificate, bill: ElectricityBill | None, sig: SignatoryId | None) -> CheckResult:
+    ref = udyam.enterprise_name
+    compare = {}
+    if bill:
+        compare["Electricity bill"] = bill.billed_to
+    if sig and sig.for_business:
+        compare["Signatory ID (business)"] = sig.for_business
+    bad = [k for k, v in compare.items() if not _same(ref, v)]
+    ok = not bad
+    return _r("NAME_MISMATCH", "PASS" if ok else "FAIL", "; ".join(f"{k}: {compare[k]}" for k in bad) or f"enterprise_name={ref}",
+              "Business name is consistent with the Udyam certificate." if ok else
+              f"The business name differs from the Udyam certificate ({', '.join(bad)}). Please upload documents that all carry the same registered name.",
+              "व्यवसाय का नाम उद्यम प्रमाणपत्र से मेल खाता है।" if ok else "दस्तावेज़ों में व्यवसाय का नाम उद्यम प्रमाणपत्र से अलग है। कृपया एक ही पंजीकृत नाम वाले दस्तावेज़ दें।")
+
+
+def check_city_udyam(udyam: UdyamCertificate, bill: ElectricityBill | None) -> CheckResult | None:
+    if not bill or not (udyam.city or "").strip() or udyam.city == UNREADABLE:
+        return None
+    ok = udyam.city.strip().lower() in (bill.supply_address or "").lower()
+    return _r("ADDRESS_MISMATCH", "PASS" if ok else "REVIEW", f"udyam city={udyam.city}; bill address={bill.supply_address}",
+              "The address proof is in the same city as the Udyam registration." if ok else
+              "The electricity bill is not for the city on the Udyam certificate. Please upload a bill for the registered address.",
+              "पता प्रमाण उद्यम पंजीकरण वाले शहर का है।" if ok else "बिजली बिल उद्यम प्रमाणपत्र वाले शहर का नहीं है। कृपया पंजीकृत पते का बिल दें।")

@@ -29,6 +29,7 @@ def _send(text: str) -> None:
         ss.bundle_items = {b["id"]: b["qty"] for b in r["recommendation"]["bundle"]}   # not `items`: that is a dict method on session_state
     if r.get("language") in ("hi", "en") and r["language"] != ss.lang:
         ss.lang = r["language"]                       # the owner typed in the other script: follow them
+        ss._lang_from_chat = True                     # app.py moves the language radio to match on the next run
     st.rerun()
 
 

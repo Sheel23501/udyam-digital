@@ -6,8 +6,9 @@ import re
 
 from ..engine.bundles import price_summary, recommend
 from ..engine.catalogue import catalogue, city_tiers
-from ..engine.models import Bundle, Need, Profile
+from ..engine.models import Bundle, Item, Need, Profile
 from ..lookup.registry import gstin_lookup
+from .explain import note_sentence
 from .language import normalise_city, parse_bool, parse_count
 from .state import State
 
@@ -93,6 +94,7 @@ def rec_payload(b: Bundle, quantities: dict[str, int] | None = None) -> dict:
         "excluded": [{"id": e.product_id, "name": cat[e.product_id].name if e.product_id in cat else e.product_id,
                       "reason": e.reason.value, "why": e.detail} for e in b.excluded],
         "notes": [n.detail for n in b.notes],
+        "notes_hi": [note_sentence(n, "hi") for n in b.notes],
     }
     if overridden:
         out["quantities_overridden"] = overridden
@@ -108,9 +110,25 @@ def missing_fields(prof: Profile, st: State | None = None) -> list[str]:
     return missing
 
 
+def apply_quantities(b: Bundle, quantities: dict[str, int] | None) -> Bundle:
+    """Owner-confirmed quantities become part of the bundle itself, so the card, the explanation, the stored quote and
+    the order all show the same numbers."""
+    if not quantities:
+        return b
+    items = {i.product_id: i.qty for i in b.items}
+    changed = False
+    for pid, q in quantities.items():
+        if pid in items and q and q > 0 and items[pid] != int(q):
+            items[pid] = int(q)
+            changed = True
+    if not changed:
+        return b
+    return b.model_copy(update={"items": [Item(product_id=p, qty=n) for p, n in items.items()], **price_summary(items)})
+
+
 def compute(st: State) -> dict:
     """Run the engine for the current state; also propose the with-line alternative on a services-only ask."""
-    st.recommendation = recommend(st.profile, line_for_addons=st.line_for_addons)
+    st.recommendation = apply_quantities(recommend(st.profile, line_for_addons=st.line_for_addons), st.quantities)
     out = rec_payload(st.recommendation, st.quantities)
     needs_line = [e for e in st.recommendation.excluded if e.reason.value == "NEEDS_BASE_LINE"]
     if needs_line and Need.SERVICES_ONLY in st.profile.needs and not st.line_for_addons:
