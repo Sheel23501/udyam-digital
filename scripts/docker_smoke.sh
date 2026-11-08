@@ -2,6 +2,7 @@
 # Smoke test for `docker compose up`: API health, the Phase-6 checkpoint, the consent gate, a sample KYC run,
 # the UI's health, and the UI container reaching the API over the compose network.
 # Usage (repo root, stack already up):  ./scripts/docker_smoke.sh      Exit 0 = all good.
+# Against a plain local API (no Docker, no UI):  SKIP_UI=1 ./scripts/docker_smoke.sh   (API defaults to localhost:8000)
 set -euo pipefail
 API=${API:-http://localhost:8000}
 UI=${UI:-http://localhost:8501}
@@ -37,6 +38,11 @@ curl -fsS -X POST "$API/advisor/chat" -H 'content-type: application/json' \
   -d "{\"session_id\":\"$SID\",\"text\":\"Kirana store in Lucknow, 2 people, one shop, no GST, customers order on WhatsApp\"}" \
   | json "bool(d['text']) and d['recommendation'] is not None" | grep -q True || fail "advisor"
 echo ok
+
+if [ "${SKIP_UI:-0}" = "1" ]; then
+  echo; echo "ALL API SMOKE CHECKS PASSED (UI checks skipped)"
+  exit 0
+fi
 
 echo "== UI health"
 curl -fsS "$UI/_stcore/health" | grep -q ok || fail "ui health"

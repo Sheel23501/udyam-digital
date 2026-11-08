@@ -6,6 +6,8 @@ A phone-first, Hindi/English journey that lets a small business owner discover t
 
 **Stack:** Python 3.13 · FastAPI · SQLite · Streamlit · advisor LLM on Groq `openai/gpt-oss-120b` through an OpenAI-compatible provider chain (Cerebras → Mistral → OpenRouter → Gemini as fallbacks) · KYC vision on Gemini (`google-genai`). Runs entirely on free tiers.
 
+**Checking it yourself:** [step-by-step guide](docs/how-to-check.md): clone → install → one-shot checks → every API endpoint by hand with expected output.
+
 **Docs:** [architecture](docs/architecture.md) · [privacy & security note (DPDP)](docs/privacy-note.md) · [deploy](docs/deploy.md) · [demo script & live-scenario playbook](docs/demo-script.md) · [demo transcripts](docs/demo-transcripts.md) · [charts and the numbers behind them](docs/charts/README.md)
 
 **Design rule:** the rules engine (`backend/app/engine/`) decides what may be sold; the LLM only asks questions and narrates the engine's result. Every bundle is re-validated before it is shown.
