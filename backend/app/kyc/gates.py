@@ -32,23 +32,49 @@ def blur_score(grey: np.ndarray) -> float:
 
 
 def skew_angle(grey: np.ndarray) -> float:
-    """Angle of the dominant text direction via Hough lines on edges. 0 = upright. Robust to margins and logos."""
+    """Angle of the dominant text direction: length-weighted median of near-horizontal Hough segments.
+    0 = upright. Returns 0 when there is too little horizontal structure to judge (never flag on thin evidence)."""
+    h, w = grey.shape[:2]
+    if w and abs(w - TEMPLATE_WH[0]) > TEMPLATE_WH[0] * 0.15:        # phone photos come in every size: normalise width first
+        f = TEMPLATE_WH[0] / w
+        grey = cv2.resize(grey, (TEMPLATE_WH[0], max(1, int(round(h * f)))), interpolation=cv2.INTER_AREA if f < 1 else cv2.INTER_CUBIC)
+        h, w = grey.shape[:2]
     edges = cv2.Canny(grey, 50, 150, apertureSize=3)
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 360, threshold=120, minLineLength=grey.shape[1] // 6, maxLineGap=20)
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 720, threshold=80, minLineLength=max(40, w // 10), maxLineGap=12)
     if lines is None:
         return 0.0
-    angles = []
+    segs: list[tuple[float, float]] = []
     for x1, y1, x2, y2 in np.asarray(lines).reshape(-1, 4):   # OpenCV 4 gives (N,1,4), OpenCV 5 gives (N,4)
-        a = np.degrees(np.arctan2(y2 - y1, x2 - x1))
-        if -45 < a < 45:                      # near-horizontal lines only (text baselines, table rules)
-            angles.append(a)
-    return float(np.median(angles)) if angles else 0.0
+        a = float(np.degrees(np.arctan2(y2 - y1, x2 - x1)))
+        if -45 < a < 45:                                      # near-horizontal: text baselines, table rules
+            segs.append((a, float(np.hypot(x2 - x1, y2 - y1))))
+    if not segs or sum(length for _, length in segs) < 1.5 * w:
+        return 0.0
+    segs.sort()
+    total = sum(length for _, length in segs)
+    acc = 0.0
+    for a, length in segs:                                    # length-weighted median
+        acc += length
+        if acc >= total / 2:
+            return a
+    return segs[-1][0]
+
+
+def normalise(grey: np.ndarray) -> np.ndarray:
+    """Bring any photo to the specimen width so blur and skew thresholds mean the same thing for a 700 px screenshot
+    and a 4000 px camera photo."""
+    h, w = grey.shape[:2]
+    if not w or abs(w - TEMPLATE_WH[0]) <= TEMPLATE_WH[0] * 0.15:
+        return grey
+    f = TEMPLATE_WH[0] / w
+    return cv2.resize(grey, (TEMPLATE_WH[0], max(1, int(round(h * f)))), interpolation=cv2.INTER_AREA if f < 1 else cv2.INTER_CUBIC)
 
 
 def stats(path: str) -> ImageStats:
     g = _grey(path)
     h, w = g.shape[:2]
-    return ImageStats(width=w, height=h, blur=blur_score(g), skew_deg=skew_angle(g))
+    n = normalise(g)
+    return ImageStats(width=w, height=h, blur=blur_score(n), skew_deg=skew_angle(n))
 
 
 def gate(path: str, doc_type: str) -> tuple[CheckResult | None, ImageStats]:

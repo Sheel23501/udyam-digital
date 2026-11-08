@@ -164,3 +164,22 @@ def test_backoffice_page_pin_queue_and_audit():
     df = at.dataframe[0].value
     assert len(df) > 0 and {"score", "suggested_action", "est_monthly_value"} <= set(df.columns)
     assert (df["score"].between(0, 1)).all()
+
+
+def test_backend_down_shows_friendly_message_not_a_traceback():
+    """Runs in a subprocess: api_client caches its mode per process, and this test needs http mode with a dead URL."""
+    import subprocess
+    code = r'''
+import os, sys
+os.environ["API_MODE"] = "http"; os.environ["BACKEND_URL"] = "http://127.0.0.1:9"
+sys.path.insert(0, {front!r})
+from streamlit.testing.v1 import AppTest
+at = AppTest.from_file({app!r}, default_timeout=60); at.run()
+assert not at.exception, at.exception
+msgs = [w.value for w in at.warning]                 # the health check stops the page before any step renders
+assert any("starting up" in m for m in msgs), msgs
+assert not at.error
+print("OK")
+'''.format(front=str(FRONT), app=str(FRONT / "app.py"))
+    r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=180, env={**os.environ})
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout + r.stderr

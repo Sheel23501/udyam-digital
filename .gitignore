@@ -7,6 +7,8 @@ __pycache__/
 .env
 # extraction cache + reports for the 12 sample applicants are committed on purpose (offline demo, quota-free tests)
 backend/data/uploads/
+# advisor reply cache fills up from tests and live use; only the pre-recorded demo conversations get committed (Phase 8)
+backend/data/cache/advisor/
 frontend/.streamlit/secrets.toml
 *.joblib
 .DS_Store

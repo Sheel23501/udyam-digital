@@ -1,0 +1,29 @@
+# Render Blueprint: deploys the API as a free Docker web service (New -> Blueprint -> this repo).
+# Set GROQ_API_KEY and GEMINI_API_KEY in the Render dashboard when prompted; everything else has a default.
+# The free plan has no persistent disk: extraction caches for the sample packs are inside the image (committed),
+# advisor replies and uploads are ephemeral (fine for the demo).
+services:
+  - type: web
+    name: udyam-digital-api
+    runtime: docker
+    rootDir: backend
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MISTRAL_API_KEY
+        sync: false
+      - key: ADVISOR_PROVIDER_CHAIN
+        value: groq,cerebras,mistral,openrouter,gemini
+      - key: ADVISOR_MODEL_GROQ
+        value: openai/gpt-oss-120b
+      - key: GEMINI_VISION_MODEL
+        value: gemini-3.5-flash-lite
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash-lite
+      - key: TODAY
+        value: "2026-07-15"

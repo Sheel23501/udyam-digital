@@ -1,0 +1,19 @@
+# Single-process deploy (Streamlit Community Cloud): the UI imports the backend and serves it in-process (API_MODE=inprocess).
+# Union of backend/requirements.txt and frontend/requirements.txt. For two-process setups install those two files instead.
+fastapi
+uvicorn[standard]
+pydantic>=2
+pandas
+google-genai
+openai
+httpx
+python-multipart
+opencv-python-headless
+pillow
+numpy
+scikit-learn
+joblib
+python-dotenv
+jellyfish
+streamlit>=1.40
+requests

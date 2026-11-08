@@ -1,0 +1,37 @@
+# Two services, one command:  cp .env.example .env  (add keys)  &&  docker compose up --build
+# API on http://localhost:8000 (docs at /docs), UI on http://localhost:8501
+services:
+  backend:
+    build: ./backend
+    env_file:
+      - path: .env
+        required: false          # the engine, KYC validators and sample packs work with no keys at all
+    environment:
+      PORT: "8000"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/data/cache:/app/data/cache     # cached extractions (committed) + advisor replies survive rebuilds
+      - uploads:/app/data/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4)\""]
+      interval: 20s
+      timeout: 5s
+      retries: 6
+      start_period: 25s
+
+  frontend:
+    build: ./frontend
+    environment:
+      BACKEND_URL: "http://backend:8000"
+      API_MODE: "http"
+      PORT: "8501"
+      STAFF_PIN: "1234"
+    ports:
+      - "8501:8501"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  uploads: {}

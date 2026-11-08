@@ -29,6 +29,27 @@ Back-office page (sidebar, staff PIN `1234`): scored queue of unclosed leads, le
 
 Headless UI tests drive the whole journey with Streamlit's `AppTest` and no server: `pytest frontend/tests -q` from the repo root.
 
+## Deploy (all free, no card)
+
+**Option A — one process on Streamlit Community Cloud (recommended):** New app → this repo → main file `frontend/app.py` →
+Advanced settings: Python 3.13, secrets:
+
+```toml
+API_MODE = "inprocess"          # the UI serves the API in the same process
+GROQ_API_KEY = "..."
+GEMINI_API_KEY = "..."
+TODAY = "2026-07-15"
+STAFF_PIN = "1234"
+```
+
+The root `requirements.txt` and `packages.txt` are for this deployment. No other service is needed.
+
+**Option B — two services:** API on Render via `render.yaml` (Blueprint, Docker, root `backend/`, set the two keys when asked),
+UI on Streamlit Community Cloud with secrets `API_MODE = "http"` and `BACKEND_URL = "https://<your-render-url>"`.
+
+**Docker (judges / any VM):** `cp .env.example .env`, add keys (optional), then `docker compose up --build` → API :8000, UI :8501.
+Docker is not installed on the development Mac, so the images were written to the compose spec but not built here.
+
 ## For judges
 
 All commands run from `backend/` with the virtualenv active.

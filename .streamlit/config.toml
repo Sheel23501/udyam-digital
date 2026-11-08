@@ -1,0 +1,15 @@
+# Used when Streamlit is started from the repo root (Streamlit Community Cloud runs `streamlit run frontend/app.py` here).
+# Keep in sync with frontend/.streamlit/config.toml, which applies when you run from inside frontend/.
+[theme]
+primaryColor = "#E40046"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F6F6F8"
+textColor = "#1A1A1A"
+font = "sans serif"
+
+[server]
+maxUploadSize = 10
+headless = true
+
+[browser]
+gatherUsageStats = false

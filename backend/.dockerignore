@@ -1,0 +1,9 @@
+__pycache__
+**/__pycache__
+.pytest_cache
+*.pyc
+data/udyam.db
+data/udyam.db-shm
+data/udyam.db-wal
+data/uploads
+data/cache/advisor
