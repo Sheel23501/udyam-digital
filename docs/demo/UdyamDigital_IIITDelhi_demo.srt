@@ -1,0 +1,51 @@
+1
+00:00:05,000 --> 00:00:13,100
+Step 1: Pick a language. The owner opens a link from WhatsApp, a QR code or a partner, and picks Hindi or English. No app to install, no salesperson.
+
+2
+00:00:13,100 --> 00:00:24,690
+Step 2: Verify the mobile number. A fresh random one-time code links the quote and the order to the owner. In demo mode the SMS is shown on screen.
+
+3
+00:00:24,690 --> 00:00:36,140
+Step 3: Describe the business in Hindi. A sari shop in Delhi: five people, two shops, GST, a card machine that keeps dropping, and cameras wanted. The advisor asks only for what is missing.
+
+4
+00:00:36,140 --> 00:00:49,010
+Step 4: One bundle, one monthly price. A rules engine picks every item from Airtel's catalogue and prices it. The AI only explains. The card also says what was left out and why.
+
+5
+00:00:49,010 --> 00:01:00,660
+Step 5: Live quote, now in English. The owner can switch language at any time. Changing a quantity re-prices instantly, and every change is checked against the rules.
+
+6
+00:01:00,660 --> 00:01:07,400
+Step 5: Rules cannot be broken. Switching off the internet line breaks a rule, because other items depend on it, so the order is blocked. Switched back on, it can continue.
+
+7
+00:01:07,400 --> 00:01:16,280
+Step 5: Locked add-ons say why. Anything this business is not eligible for stays locked, with the reason next to it.
+
+8
+00:01:16,280 --> 00:01:30,190
+Step 6: Consent before any document. Each purpose is listed in plain words, as the DPDP Act asks. The API refuses documents until the owner agrees.
+
+9
+00:01:30,190 --> 00:01:46,720
+Step 7: Smart KYC catches a tampered GSTIN. Four documents, 12 checks against the GST and Udyam registries in seconds. Sample K06 has a tampered digit: rejected, with the reason shown.
+
+10
+00:01:46,720 --> 00:02:01,520
+Step 7: A genuine owner passes. Sample K03 is verified in seconds. GSTIN and names stay masked on screen, in the API and in the audit log.
+
+11
+00:02:01,520 --> 00:02:16,770
+Step 8: Order placed, no status calls. Every stage has an expected date, and the owner is notified at each step, so nobody has to call and ask.
+
+12
+00:02:16,770 --> 00:02:21,310
+Step 8: Done, with a referral link. The owner can invite another business. Both get one month of a SIM plan free when it activates.
+
+13
+00:02:21,310 --> 00:02:37,120
+Step 9: Back office for staff. Leads the journey could not close land in a scored queue with a suggested next action, so the field team calls the high-value ones first. PIN protected.

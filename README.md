@@ -10,6 +10,8 @@ A phone-first, Hindi/English journey that lets a small business owner discover t
 
 **Submission deck:** [7 slides on the Airtel SYNC template: approach, competitive analysis, impact](docs/UdyamDigital_IIITDelhi.pptx) ([PDF](docs/UdyamDigital_IIITDelhi.pdf)); regenerate with `cd backend && python scripts/make_deck.py` (every figure comes from `docs/charts/numbers.json` and the rules engine).
 
+**Demo video (2:44, captioned):** [docs/demo/UdyamDigital_IIITDelhi_demo.mp4](docs/demo/UdyamDigital_IIITDelhi_demo.mp4) with [subtitles](docs/demo/UdyamDigital_IIITDelhi_demo.srt); re-record with `backend/scripts/demo_video/record.py` then `compose.py` (needs `pip install playwright imageio-ffmpeg`).
+
 **Docs:** [architecture](docs/architecture.md) · [privacy & security note (DPDP)](docs/privacy-note.md) · [deploy](docs/deploy.md) · [demo script & live-scenario playbook](docs/demo-script.md) · [demo transcripts](docs/demo-transcripts.md) · [charts and the numbers behind them](docs/charts/README.md)
 
 **Design rule:** the rules engine (`backend/app/engine/`) decides what may be sold; the LLM only asks questions and narrates the engine's result. Every bundle is re-validated before it is shown.
