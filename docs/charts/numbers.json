@@ -1,0 +1,179 @@
+{
+  "leads": 5000,
+  "activated": 368,
+  "period": [
+    "2026-04-01",
+    "2026-06-30"
+  ],
+  "activation_by_source": {
+    "WhatsApp campaign": {
+      "rate_pct": 2.8,
+      "leads": 358
+    },
+    "Website form": {
+      "rate_pct": 4.3,
+      "leads": 995
+    },
+    "Field sales": {
+      "rate_pct": 7.3,
+      "leads": 1720
+    },
+    "Channel partner": {
+      "rate_pct": 8.0,
+      "leads": 1010
+    },
+    "Inbound call": {
+      "rate_pct": 9.5,
+      "leads": 504
+    },
+    "Referral": {
+      "rate_pct": 14.8,
+      "leads": 413
+    }
+  },
+  "payback_by_segment": {
+    "Small multi-site businesses": {
+      "blended_cac": 15614,
+      "monthly_value": 31233,
+      "payback_months": 0.5,
+      "churn_6m_pct": 10.8,
+      "activations": 83
+    },
+    "Small manufacturers": {
+      "blended_cac": 15324,
+      "monthly_value": 19980,
+      "payback_months": 0.8,
+      "churn_6m_pct": 8.1,
+      "activations": 37
+    },
+    "Professional offices": {
+      "blended_cac": 10695,
+      "monthly_value": 6796,
+      "payback_months": 1.6,
+      "churn_6m_pct": 13.8,
+      "activations": 138
+    },
+    "Micro retail & services": {
+      "blended_cac": 20007,
+      "monthly_value": 2505,
+      "payback_months": 8.0,
+      "churn_6m_pct": 22.7,
+      "activations": 110
+    }
+  },
+  "micro_retail_field_sales": {
+    "blended_cac": 53026,
+    "monthly_value": 2619,
+    "activations": 27,
+    "leads": 894
+  },
+  "drop_reasons": {
+    "Unreachable after 3 attempts": 805,
+    "Owner had no time for a visit": 531,
+    "Not interested on first call": 470,
+    "Price too high": 414,
+    "Locked in with current provider": 325,
+    "Wrong or invalid number": 319,
+    "Visit not scheduled by sales": 296,
+    "Only wanted a mobile plan": 280,
+    "Competitor offered cheaper plan": 207,
+    "Quote too complex to understand": 206,
+    "Quote took too long to arrive": 179,
+    "Decided to wait": 107,
+    "Installation delayed beyond 21 days": 98,
+    "Missing GST or Udyam document": 94,
+    "Found paperwork too long": 79,
+    "Authorised signatory not available": 53,
+    "Customer cancelled before install": 53,
+    "Document details did not match": 47,
+    "Site not feasible for fibre": 41,
+    "First payment failed": 28
+  },
+  "drop_groups": {
+    "Sales process / human in the way": 2247,
+    "Offer / price / fit": 1844,
+    "Paperwork / data quality": 541
+  },
+  "human_in_the_way_pct": 48.5,
+  "gst": {
+    "with_gst_rate_pct": 9.6,
+    "without_gst_rate_pct": 2.0,
+    "with_gst_leads": 3534,
+    "without_gst_leads": 1466,
+    "no_gst_asked_gst_only_products": 600,
+    "their_rate_pct": 2.3
+  },
+  "asked_vs_sold": {
+    "P04": {
+      "name": "Biz 5G AirFiber 100",
+      "asked": 719,
+      "sold": 9
+    },
+    "P18": {
+      "name": "Website + Domain Starter",
+      "asked": 748,
+      "sold": 16
+    },
+    "P14": {
+      "name": "Business SMS 10k",
+      "asked": 813,
+      "sold": 27
+    },
+    "P15": {
+      "name": "WhatsApp Business API Starter",
+      "asked": 827,
+      "sold": 54
+    },
+    "P23": {
+      "name": "Cloud CCTV",
+      "asked": 787,
+      "sold": 84
+    },
+    "P19": {
+      "name": "Cloud POS & Billing",
+      "asked": 677,
+      "sold": 80
+    }
+  },
+  "days_to_activation": {
+    "median": 17.0,
+    "mean": 17.6,
+    "min": 7,
+    "max": 31
+  },
+  "churn_by_follow_up_calls": {
+    "1": {
+      "customers": 34,
+      "churn_6m_pct": 5.9
+    },
+    "2": {
+      "customers": 84,
+      "churn_6m_pct": 14.3
+    },
+    "3": {
+      "customers": 137,
+      "churn_6m_pct": 11.7
+    },
+    "4": {
+      "customers": 70,
+      "churn_6m_pct": 20.0
+    },
+    "5": {
+      "customers": 43,
+      "churn_6m_pct": 27.9
+    }
+  },
+  "language_share_pct": {
+    "Malayalam": 1.7,
+    "Punjabi": 1.9,
+    "Bengali": 2.2,
+    "Telugu": 4.1,
+    "Tamil": 4.1,
+    "Gujarati": 4.7,
+    "Kannada": 5.1,
+    "Marathi": 10.1,
+    "English": 23.4,
+    "Hindi": 42.7
+  },
+  "language_covered_pct": 66.1
+}
