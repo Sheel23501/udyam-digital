@@ -1,0 +1,40 @@
+{
+  "applicant": "K10",
+  "gst_certificate": {
+    "header_text": "Specimen: GST Registration Certificate",
+    "gstin": "27QHJXK0658U1ZL",
+    "legal_name": "Kaveri Stays LLP",
+    "trade_name": "Kaveri Stays LLP",
+    "constitution": "Limited Liability Partnership",
+    "principal_address": "Shop/Unit 21, Sector 14, Mumbai, Maharashtra - 570043",
+    "state": "Maharashtra",
+    "date_of_liability": "2022-07-13",
+    "gstin_confidence": 0.99
+  },
+  "udyam_certificate": {
+    "header_text": "Specimen: Udyam Registration Certificate",
+    "udyam_number": "UDYAM-MH-00-7183141",
+    "enterprise_name": "Kaveri Stays LLP",
+    "enterprise_type": "Small",
+    "major_activity": "Trading",
+    "state": "Maharashtra",
+    "city": "Mumbai",
+    "date_of_registration": "2024-02-02"
+  },
+  "signatory_id": {
+    "header_text": "Authorised Signatory ID",
+    "name": "Nisha Arora",
+    "designation": "Owner",
+    "for_business": "Kaveri Stays LLP",
+    "id_number": "SYN-ID-561724",
+    "valid_till": "2028-12-31"
+  },
+  "address_proof": {
+    "header_text": "Specimen: Electricity Bill",
+    "consumer_number": "EB6855787",
+    "billed_to": "Kaveri Stays LLP",
+    "supply_address": "Shop/Unit 21, Sector 14, Mumbai, Maharashtra - 570043",
+    "bill_date": "2026-06-18",
+    "amount": "₹ 2,340"
+  }
+}

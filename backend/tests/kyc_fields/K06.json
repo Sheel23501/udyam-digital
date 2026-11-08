@@ -1,0 +1,40 @@
+{
+  "applicant": "K06",
+  "gst_certificate": {
+    "header_text": "Specimen: GST Registration Certificate",
+    "gstin": "08YKZXS8189L1ZO",
+    "legal_name": "Pooja Shah (Prop. Saffron Unisex Salon)",
+    "trade_name": "Saffron Unisex Salon",
+    "constitution": "Proprietorship",
+    "principal_address": "Shop/Unit 71, Market Yard, Jaipur, Rajasthan - 194057",
+    "state": "Rajasthan",
+    "date_of_liability": "2019-09-25",
+    "gstin_confidence": 0.99
+  },
+  "udyam_certificate": {
+    "header_text": "Specimen: Udyam Registration Certificate",
+    "udyam_number": "UDYAM-RJ-00-6577157",
+    "enterprise_name": "Saffron Unisex Salon",
+    "enterprise_type": "Micro",
+    "major_activity": "Trading",
+    "state": "Rajasthan",
+    "city": "Jaipur",
+    "date_of_registration": "2025-12-30"
+  },
+  "signatory_id": {
+    "header_text": "Authorised Signatory ID",
+    "name": "Pooja Shah",
+    "designation": "Owner",
+    "for_business": "Saffron Unisex Salon",
+    "id_number": "SYN-ID-637154",
+    "valid_till": "2028-12-31"
+  },
+  "address_proof": {
+    "header_text": "Specimen: Electricity Bill",
+    "consumer_number": "EB4822451",
+    "billed_to": "Saffron Unisex Salon",
+    "supply_address": "Shop/Unit 71, Market Yard, Jaipur, Rajasthan - 194057",
+    "bill_date": "2026-06-11",
+    "amount": "₹ 2,340"
+  }
+}

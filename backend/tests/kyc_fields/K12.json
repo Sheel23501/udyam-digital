@@ -1,0 +1,40 @@
+{
+  "applicant": "K12",
+  "gst_certificate": {
+    "header_text": "Specimen: GST Registration Certificate",
+    "gstin": "37NBLXS1145E1ZU",
+    "legal_name": "Pooja Agarwal (Prop. Star Electronics)",
+    "trade_name": "Star Electronics",
+    "constitution": "Proprietorship",
+    "principal_address": "Shop/Unit 216, Nehru Nagar, Visakhapatnam, Andhra Pradesh - 762071",
+    "state": "Andhra Pradesh",
+    "date_of_liability": "2017-01-08",
+    "gstin_confidence": 0.99
+  },
+  "udyam_certificate": {
+    "header_text": "Specimen: Udyam Registration Certificate",
+    "udyam_number": "UDYAM-AP-00-5186772",
+    "enterprise_name": "Star Electronics",
+    "enterprise_type": "Micro",
+    "major_activity": "Trading",
+    "state": "Andhra Pradesh",
+    "city": "Visakhapatnam",
+    "date_of_registration": "2021-10-17"
+  },
+  "signatory_id": {
+    "header_text": "Authorised Signatory ID",
+    "name": "Pooja Agarwal",
+    "designation": "Owner",
+    "for_business": "Star Electronics",
+    "id_number": "SYN-ID-978589",
+    "valid_till": "2028-12-31"
+  },
+  "address_proof": {
+    "header_text": "Specimen: Electricity Bill",
+    "consumer_number": "EB6208144",
+    "billed_to": "Star Electronics",
+    "supply_address": "Shop/Unit 216, Nehru Nagar, Visakhapatnam, Andhra Pradesh - 762071",
+    "bill_date": "2026-07-06",
+    "amount": "₹ 2,340"
+  }
+}

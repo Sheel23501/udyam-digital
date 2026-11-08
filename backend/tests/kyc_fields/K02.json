@@ -1,0 +1,40 @@
+{
+  "applicant": "K02",
+  "gst_certificate": {
+    "header_text": "Specimen: GST Registration Certificate",
+    "gstin": "19E0GXH4115Y1ZL",
+    "legal_name": "Joseph Shah (Prop. Harmony Dental Care)",
+    "trade_name": "Harmony Dental Care",
+    "constitution": "Proprietorship",
+    "principal_address": "Shop/Unit 199, Station Road, Kolkata, West Bengal - 347550",
+    "state": "West Bengal",
+    "date_of_liability": "2022-04-17",
+    "gstin_confidence": 0.99
+  },
+  "udyam_certificate": {
+    "header_text": "Specimen: Udyam Registration Certificate",
+    "udyam_number": "UDYAM-WB-00-5053330",
+    "enterprise_name": "Harmony Dental Care",
+    "enterprise_type": "Small",
+    "major_activity": "Services",
+    "state": "West Bengal",
+    "city": "Kolkata",
+    "date_of_registration": "2022-09-27"
+  },
+  "signatory_id": {
+    "header_text": "Authorised Signatory ID",
+    "name": "Joseph Shah",
+    "designation": "Manager",
+    "for_business": "Harmony Dental Care",
+    "id_number": "SYN-ID-513169",
+    "valid_till": "2028-12-31"
+  },
+  "address_proof": {
+    "header_text": "Specimen: Electricity Bill",
+    "consumer_number": "EB8264045",
+    "billed_to": "Harmony Dental Care",
+    "supply_address": "Shop/Unit 199, Station Road, Kolkata, West Bengal - 347550",
+    "bill_date": "2026-05-22",
+    "amount": "₹ 2,340"
+  }
+}

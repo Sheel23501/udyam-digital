@@ -1,0 +1,15 @@
+{
+  "_note": "Text-level answer key (fields as extracted). Image-quality verdicts for K02 (rotated) and K04 (blurred) are added by the Phase 4 gates; at text level K02 normalises cleanly and K04 is REVIEW via low GSTIN confidence.",
+  "K01": {"verdict": "FAIL",   "codes": ["GSTIN_STATUS", "UDYAM_MISSING_NUMBER"]},
+  "K02": {"verdict": "PASS",   "codes": []},
+  "K03": {"verdict": "PASS",   "codes": []},
+  "K04": {"verdict": "REVIEW", "codes": ["GSTIN_UNREADABLE"]},
+  "K05": {"verdict": "FAIL",   "codes": ["DOC_MISSING"]},
+  "K06": {"verdict": "FAIL",   "codes": ["GSTIN_CHECKSUM", "GSTIN_NOT_IN_REGISTRY"]},
+  "K07": {"verdict": "FAIL",   "codes": ["NAME_MISMATCH"]},
+  "K08": {"verdict": "PASS",   "codes": []},
+  "K09": {"verdict": "PASS",   "codes": []},
+  "K10": {"verdict": "FAIL",   "codes": ["SIGNATORY_NOT_AUTHORISED"]},
+  "K11": {"verdict": "FAIL",   "codes": ["ADDRESS_PROOF_STALE"]},
+  "K12": {"verdict": "PASS",   "codes": []}
+}

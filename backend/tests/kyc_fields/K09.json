@@ -1,0 +1,40 @@
+{
+  "applicant": "K09",
+  "gst_certificate": {
+    "header_text": "Specimen: GST Registration Certificate",
+    "gstin": "37LDYXK0296F1ZB",
+    "legal_name": "Anita Kulkarni (Prop. Kaveri Insurance Advisors)",
+    "trade_name": "Kaveri Insurance Advisors",
+    "constitution": "Proprietorship",
+    "principal_address": "Shop/Unit 217, Civil Lines, Visakhapatnam, Andhra Pradesh - 405337",
+    "state": "Andhra Pradesh",
+    "date_of_liability": "2023-09-20",
+    "gstin_confidence": 0.99
+  },
+  "udyam_certificate": {
+    "header_text": "Specimen: Udyam Registration Certificate",
+    "udyam_number": "UDYAM-AP-00-9751562",
+    "enterprise_name": "Kaveri Insurance Advisors",
+    "enterprise_type": "Micro",
+    "major_activity": "Services",
+    "state": "Andhra Pradesh",
+    "city": "Visakhapatnam",
+    "date_of_registration": "2024-08-24"
+  },
+  "signatory_id": {
+    "header_text": "Authorised Signatory ID",
+    "name": "Anita Kulkarni",
+    "designation": "Office admin",
+    "for_business": "Kaveri Insurance Advisors",
+    "id_number": "SYN-ID-406158",
+    "valid_till": "2028-12-31"
+  },
+  "address_proof": {
+    "header_text": "Specimen: Electricity Bill",
+    "consumer_number": "EB9013484",
+    "billed_to": "Kaveri Insurance Advisors",
+    "supply_address": "Shop/Unit 217, Civil Lines, Visakhapatnam, Andhra Pradesh - 405337",
+    "bill_date": "2026-07-10",
+    "amount": "₹ 2,340"
+  }
+}

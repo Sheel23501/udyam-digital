@@ -1,0 +1,31 @@
+{
+  "applicant": "K05",
+  "gst_certificate": {
+    "header_text": "Specimen: GST Registration Certificate",
+    "gstin": "32TZAXB5481U1Z1",
+    "legal_name": "Balaji Realty LLP",
+    "trade_name": "Balaji Realty LLP",
+    "constitution": "Limited Liability Partnership",
+    "principal_address": "Shop/Unit 38, Civil Lines, Kochi, Kerala - 752083",
+    "state": "Kerala",
+    "date_of_liability": "2020-07-26",
+    "gstin_confidence": 0.99
+  },
+  "udyam_certificate": null,
+  "signatory_id": {
+    "header_text": "Authorised Signatory ID",
+    "name": "Anita Shah",
+    "designation": "Owner",
+    "for_business": "Balaji Realty LLP",
+    "id_number": "SYN-ID-528355",
+    "valid_till": "2028-12-31"
+  },
+  "address_proof": {
+    "header_text": "Specimen: Electricity Bill",
+    "consumer_number": "EB9935534",
+    "billed_to": "Balaji Realty LLP",
+    "supply_address": "Shop/Unit 38, Civil Lines, Kochi, Kerala - 752083",
+    "bill_date": "2026-06-11",
+    "amount": "₹ 2,340"
+  }
+}

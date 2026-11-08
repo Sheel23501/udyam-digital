@@ -1,0 +1,40 @@
+{
+  "applicant": "K07",
+  "gst_certificate": {
+    "header_text": "Specimen: GST Registration Certificate",
+    "gstin": "07CPCXN0398P1ZT",
+    "legal_name": "Neha Banerjee (Prop. Shri Physio Clinic)",
+    "trade_name": "Neelgiri Physio Clinic",
+    "constitution": "Proprietorship",
+    "principal_address": "Shop/Unit 52, Transport Nagar, Delhi, Delhi - 334596",
+    "state": "Delhi",
+    "date_of_liability": "2024-01-13",
+    "gstin_confidence": 0.99
+  },
+  "udyam_certificate": {
+    "header_text": "Specimen: Udyam Registration Certificate",
+    "udyam_number": "UDYAM-DL-00-9565547",
+    "enterprise_name": "Neelgiri Physio Clinic",
+    "enterprise_type": "Small",
+    "major_activity": "Services",
+    "state": "Delhi",
+    "city": "Delhi",
+    "date_of_registration": "2023-04-04"
+  },
+  "signatory_id": {
+    "header_text": "Authorised Signatory ID",
+    "name": "Neha Banerjee",
+    "designation": "Manager",
+    "for_business": "Neelgiri Physio Clinic",
+    "id_number": "SYN-ID-519017",
+    "valid_till": "2028-12-31"
+  },
+  "address_proof": {
+    "header_text": "Specimen: Electricity Bill",
+    "consumer_number": "EB1517538",
+    "billed_to": "Neelgiri Physio Clinic",
+    "supply_address": "Shop/Unit 52, Transport Nagar, Delhi, Delhi - 334596",
+    "bill_date": "2026-07-05",
+    "amount": "₹ 2,340"
+  }
+}

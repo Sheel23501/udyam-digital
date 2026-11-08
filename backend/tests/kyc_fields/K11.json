@@ -1,0 +1,40 @@
+{
+  "applicant": "K11",
+  "gst_certificate": {
+    "header_text": "Specimen: GST Registration Certificate",
+    "gstin": "03KGZXT1320R1ZZ",
+    "legal_name": "Trinity Bake House Pvt Ltd",
+    "trade_name": "Trinity Bake House Pvt Ltd",
+    "constitution": "Private Limited Company",
+    "principal_address": "Shop/Unit 188, Industrial Area Phase 2, Ludhiana, Punjab - 541498",
+    "state": "Punjab",
+    "date_of_liability": "2019-08-19",
+    "gstin_confidence": 0.99
+  },
+  "udyam_certificate": {
+    "header_text": "Specimen: Udyam Registration Certificate",
+    "udyam_number": "UDYAM-PB-00-9719478",
+    "enterprise_name": "Trinity Bake House Pvt Ltd",
+    "enterprise_type": "Micro",
+    "major_activity": "Trading",
+    "state": "Punjab",
+    "city": "Ludhiana",
+    "date_of_registration": "2022-08-31"
+  },
+  "signatory_id": {
+    "header_text": "Authorised Signatory ID",
+    "name": "Vikram Pillai",
+    "designation": "Owner",
+    "for_business": "Trinity Bake House Pvt Ltd",
+    "id_number": "SYN-ID-822261",
+    "valid_till": "2028-12-31"
+  },
+  "address_proof": {
+    "header_text": "Specimen: Electricity Bill",
+    "consumer_number": "EB4649847",
+    "billed_to": "Trinity Bake House Pvt Ltd",
+    "supply_address": "Shop/Unit 188, Industrial Area Phase 2, Ludhiana, Punjab - 541498",
+    "bill_date": "2025-10-31",
+    "amount": "₹ 2,340"
+  }
+}
